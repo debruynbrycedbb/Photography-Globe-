@@ -205,7 +205,7 @@ export const ringFragment = /* glsl */ `
 `;
 
 // The Moon: procedural albedo (r) + height (g), lit from a fixed direction in view space
-// so it always reads as a softly lit gibbous moon, with the same teal rim as the Earth.
+// so it always reads as a softly lit gibbous moon with black shadows.
 export const moonVertex = /* glsl */ `
   varying vec2 vUv;
   varying vec3 vNormalV;
@@ -239,10 +239,10 @@ export const moonFragment = /* glsl */ `
     float hill = clamp(0.5 + ((hW - hE) + (hN - hS)) * 6.0, 0.0, 1.0);
     vec3 L = normalize(vec3(-0.55, 0.45, 0.7));
     float diff = smoothstep(-0.12, 0.6, dot(N, L));
-    vec3 base = mix(vec3(0.30, 0.33, 0.33), vec3(0.80, 0.83, 0.82), t.r);
-    vec3 col = base * mix(0.62, 1.32, hill) * (0.05 + 0.95 * diff);
-    float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
-    col += uAccent * fres * (0.30 + 0.35 * uHover);
+    // Neutral grey surface; the unlit side falls off to black (no coloured rim).
+    vec3 base = mix(vec3(0.31), vec3(0.82, 0.82, 0.80), t.r);
+    vec3 col = base * mix(0.62, 1.32, hill) * (0.02 + 0.98 * diff);
+    col *= 1.0 + 0.12 * uHover; // slight brighten on hover instead of a glow
     gl_FragColor = vec4(col * uFade, uFade);
   }
 `;
