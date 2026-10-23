@@ -638,8 +638,9 @@ body:has(.app.is-gallery) .site-header::before {
 .strip {
   position: absolute;
   left: calc(var(--gutter) - 4px);
-  right: calc(var(--gutter) - 4px);
-  bottom: 12vh;
+  /* Ends where the location panel's column begins, so the two never overlap. */
+  right: calc(var(--gutter) + clamp(230px, 17vw, 290px) + 44px);
+  bottom: clamp(62px, 8.5vh, 123px);
   display: flex;
   align-items: flex-start;
   gap: 8px;
@@ -648,7 +649,7 @@ body:has(.app.is-gallery) .site-header::before {
   flex: 1;
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: calc((100% - 7 * 12px) / 8);
+  grid-auto-columns: calc((100% - 5 * 12px) / 6);
   gap: 12px;
   margin: 0;
   padding: 2px 2px 6px;
@@ -732,8 +733,7 @@ body:has(.app.is-gallery) .site-header::before {
 .strip-arrow {
   flex: none;
   width: 28px;
-  height: calc((100vw - 2 * var(--gutter)) / 8 / 1.52);
-  max-height: 120px;
+  height: var(--thumb-h, 110px);
   display: grid;
   place-items: center;
   color: var(--accent);
@@ -751,7 +751,7 @@ body:has(.app.is-gallery) .site-header::before {
   position: absolute;
   left: var(--gutter);
   right: var(--gutter);
-  bottom: 52px;
+  bottom: clamp(24px, 4vh, 52px);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1269,7 +1269,7 @@ body:has(.app.is-gallery) .site-header::before {
     margin-top: 16px;
   }
   .strip-track {
-    grid-auto-columns: calc((100% - 5 * 12px) / 6);
+    grid-auto-columns: calc((100% - 4 * 12px) / 5);
   }
 }
 
@@ -1544,12 +1544,6 @@ body:has(.app.is-gallery) .site-header::before {
   }
   .panel-desc {
     display: none;
-  }
-  .strip {
-    bottom: 9vh;
-  }
-  .home-footer {
-    bottom: 28px;
   }
 }
 

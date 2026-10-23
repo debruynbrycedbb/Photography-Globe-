@@ -40,6 +40,12 @@ export interface GlobeOptions {
   onPick?: (index: number) => void;
   onActivate?: (index: number) => void;
   onInteract?: () => void;
+  /**
+   * Free vertical space for the globe on wide screens, in pixels from the top of the
+   * stage (between the header and the location strip). The globe is sized and centred
+   * to fit inside it, so it is never covered on short screens.
+   */
+  fitBox?: () => { top: number; bottom: number } | null;
 }
 
 const ACCENT = hexVec('#3ef0b1');
@@ -375,6 +381,7 @@ export class Globe {
   }
 
   resize() {
+    if (!this.orbitDots) return; // not set up yet; init() calls resize() when ready
     const r = this.stage.getBoundingClientRect();
     this.w = Math.max(1, r.width);
     this.h = Math.max(1, r.height);
@@ -386,10 +393,16 @@ export class Globe {
 
     // Desired on-screen globe radius and vertical centre (matches the CSS layout).
     const wide = this.w >= 900;
-    const radius = wide
+    let radius = wide
       ? Math.min(0.285 * this.h, (this.w < 1180 ? 0.168 : 0.2) * this.w)
       : Math.min(0.39 * this.w, 0.25 * this.h);
     this.centerY = wide ? 0.386 : 0.43;
+    const box = wide ? this.opts.fitBox?.() : null;
+    if (box && box.bottom - box.top > 120) {
+      // 1.09 leaves room for the atmosphere glow around the edge.
+      radius = Math.min(radius, (box.bottom - box.top) / 2 / 1.09);
+      this.centerY = (box.top + box.bottom) / 2 / this.h;
+    }
     this.radiusPx = radius;
     const tanHalf = Math.tan((35 * DEG) / 2);
     const alpha = Math.atan((radius / (this.h / 2)) * tanHalf);

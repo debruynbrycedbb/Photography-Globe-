@@ -87,7 +87,16 @@ export function startApp() {
       onPick: (i) => select(i),
       onActivate: (i) => enter(i),
       onInteract: () => root.classList.add('has-interacted'),
+      fitBox: () => {
+        const header = document.querySelector('[data-header]')?.getBoundingClientRect();
+        const strip = document.querySelector('.strip')?.getBoundingClientRect();
+        if (!header || !strip || !strip.height) return null;
+        // The middle column under the header is empty, so the globe may rise slightly into it.
+        return { top: header.bottom * 0.72, bottom: strip.top - 14 };
+      },
     });
+    // Labels wrapping differently once the web fonts arrive can change the strip's height.
+    document.fonts?.ready.then(() => globe?.resize());
     globe.onFrame = (screen) => {
       const s = screen[selected];
       const up = globe ? Math.max(0, 1 - globe.view.descend * 12) : 0;
@@ -201,6 +210,13 @@ export function startApp() {
         });
       }
     }
+  }
+
+  // Keep the strip's scroll arrows vertically centred on the thumbnails.
+  const firstThumb = document.querySelector<HTMLElement>('.strip-thumb');
+  const stripEl = document.querySelector<HTMLElement>('.strip');
+  if (firstThumb && stripEl) {
+    new ResizeObserver(() => stripEl.style.setProperty('--thumb-h', `${firstThumb.offsetHeight}px`)).observe(firstThumb);
   }
 
   track?.addEventListener('click', (e) => {
