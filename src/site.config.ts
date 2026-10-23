@@ -14,7 +14,7 @@ export const site = {
   /** Contact details shown on the Contact page. Leave a field empty ('') to hide it. */
   contact: {
     email: 'debruynbryce2001@gmail.com',
-    phone: '+34 671 077 827',
+    phone: '', // left empty so no phone number is shown on the site
     youtube: 'https://www.youtube.com/@bdbvideos2662',
     linkedin: 'https://www.linkedin.com/in/bryce-de-bruyn-876881226',
     instagram: '',
