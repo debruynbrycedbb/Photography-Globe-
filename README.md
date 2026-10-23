@@ -99,6 +99,27 @@ A location with `body: moon` sits on the Moon instead of the Earth (see `src/con
 
 The Moon's surface is drawn by `scripts/build-moon-texture.py` (procedural, no third-party imagery). Re-run it only if you want a different surface.
 
+### Gallery banner (the full-screen header)
+
+Put a landscape photo whose file name starts with `banner` (e.g. `bannerparis.jpg`) in the folder you import, and the import script saves it as the location's `banner.jpg` at up to 4,000 px wide instead of adding it to the gallery. Or set it by hand:
+
+```yaml
+banner: ./banner.jpg
+bannerPosition: "50% 50%"   # which part stays visible on phones, which crop the sides: "30% 50%" keeps more of the left
+```
+
+Without a banner, the gallery header uses the cover photo.
+
+### Similar photos are spread out
+
+Give photos of the same subject a matching `subject` and the gallery never shows two of them side by side (when that's possible). Otherwise photos appear in the order of `location.yaml`, which the import keeps in date order.
+
+```yaml
+  - file: ./tangala-16.jpg
+    title: Lion
+    subject: lion
+```
+
 ### Choosing a cover and framing it
 
 `cover` picks the photo used for the homepage panel, the location strip and the full-screen gallery opening. Most photos are cropped to fit those spaces, so `coverPosition` sets which part stays visible: `"50% 30%"` keeps more of the top, `"50% 70%"` more of the bottom.

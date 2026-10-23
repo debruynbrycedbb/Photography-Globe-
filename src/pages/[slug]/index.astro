@@ -9,7 +9,7 @@ export async function getStaticPaths() {
 }
 
 const { loc } = Astro.props;
-const og = await sized(loc.data.cover, 1200);
+const og = await sized(loc.data.banner ?? loc.data.cover, 1200);
 ---
 
 <Base

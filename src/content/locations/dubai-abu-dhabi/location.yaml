@@ -16,6 +16,19 @@ photos:
       iso: 2500
     title: Burj Khalifa
     alt: The Burj Khalifa lit up in colour against the night sky
+    subject: skyline
+  - file: ./dubai-abu-dhabi-09.jpg
+    taken: 2025-01-01T13:17:28
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 15mm
+      aperture: f/7.1
+      shutter: 1/320
+      iso: 100
+    title: ""
+    alt: Dubai skyscrapers and a sweeping motorway interchange seen from above
+    subject: skyline
   - file: ./dubai-abu-dhabi-02.jpg
     taken: 2025-01-02T11:31:43
     camera: Canon EOS M50
@@ -27,6 +40,7 @@ photos:
       iso: 100
     title: Burj Al Arab
     alt: The sail-shaped Burj Al Arab in front of the Dubai skyline, with a yacht on turquoise water
+    subject: skyline
   - file: ./dubai-abu-dhabi-03.jpg
     taken: 2025-07-27T17:04:13
     camera: Canon EOS M50
@@ -38,6 +52,7 @@ photos:
       iso: 1250
     title: Buried village, Al Madam
     alt: Sand drifted into the rooms of an abandoned house with red walls
+    subject: buried-village
   - file: ./dubai-abu-dhabi-04.jpg
     taken: 2025-07-27T17:07:24
     camera: Canon EOS M50
@@ -49,6 +64,7 @@ photos:
       iso: 100
     title: Buried village, Al Madam
     alt: An abandoned house half-buried by red sand dunes under a hazy sun
+    subject: buried-village
   - file: ./dubai-abu-dhabi-05.jpg
     taken: 2025-07-27T17:13:37
     camera: Canon EOS M50
@@ -60,6 +76,7 @@ photos:
       iso: 100
     title: Buried village, Al Madam
     alt: A bare tree beside sand-covered abandoned houses
+    subject: buried-village
   - file: ./dubai-abu-dhabi-06.jpg
     taken: 2025-07-29T11:42:00
     camera: Canon EOS M50
@@ -71,6 +88,7 @@ photos:
       iso: 100
     title: Sheikh Zayed Grand Mosque, Abu Dhabi
     alt: Ornate cream and gold pattern inside a mosque dome, seen from directly below
+    subject: mosque
   - file: ./dubai-abu-dhabi-07.jpg
     taken: 2025-07-29T11:43:53
     camera: Canon EOS M50
@@ -82,6 +100,7 @@ photos:
       iso: 100
     title: Sheikh Zayed Grand Mosque, Abu Dhabi
     alt: White marble domes and courtyard of the Sheikh Zayed Grand Mosque with visitors
+    subject: mosque
   - file: ./dubai-abu-dhabi-08.jpg
     taken: 2025-07-29T12:13:40
     camera: Canon EOS M50
@@ -93,5 +112,19 @@ photos:
       iso: 100
     title: Sheikh Zayed Grand Mosque, Abu Dhabi
     alt: Marble columns with gold palm-shaped capitals beside a blue reflecting pool
+    subject: mosque
+  - file: ./dubai-abu-dhabi-10.jpg
+    taken: 2025-07-29T15:17:13
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 15mm
+      aperture: f/3.5
+      shutter: 1/80
+      iso: 160
+    title: ""
+    alt: A vast gilded hall with patterned ceilings and arched doorways
 cover: ./dubai-abu-dhabi-02.jpg
 coverPosition: 50% 42%
+banner: ./banner.jpg
+bannerPosition: 63% 50%

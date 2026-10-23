@@ -90,7 +90,12 @@ async function collect(p) {
   }
   return IMAGE_EXT.test(p) ? [path.resolve(p)] : [];
 }
-const files = (await Promise.all(positionals.map(collect))).flat();
+const found = (await Promise.all(positionals.map(collect))).flat();
+// A file whose name starts with "banner" (e.g. bannerparis.jpg) becomes the gallery's
+// full-screen header instead of a gallery photo.
+const isBanner = (f) => /^banner/i.test(path.basename(f));
+const bannerFile = found.find(isBanner);
+const files = found.filter((f) => !isBanner(f));
 if (!files.length) fail('No image files found (supported: jpg, png, webp, tiff, heic, avif).');
 
 // ---------- EXIF helpers ----------
@@ -211,6 +216,17 @@ for (let i = 0; i < files.length; i++) {
   );
   console.log(`  ✓ ${outName}${e.taken ? `  (${e.taken.slice(0, 10)})` : ''}`);
   added++;
+}
+
+if (bannerFile) {
+  await sharp(bannerFile)
+    .rotate()
+    .resize({ width: 4000, height: 4000, fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: 90, mozjpeg: true, chromaSubsampling: '4:4:4' })
+    .toFile(path.join(dir, 'banner.jpg'));
+  doc.set('banner', './banner.jpg');
+  if (!doc.get('bannerPosition')) doc.set('bannerPosition', '50% 50%');
+  console.log(`  ✓ banner.jpg (gallery header, from ${path.basename(bannerFile)})`);
 }
 
 if (!doc.get('cover') && photos.items.length) {

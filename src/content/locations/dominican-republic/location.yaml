@@ -5,6 +5,29 @@ coordinates:
   lng: -70.1627
 description: "Sunset over the sea and a starfish on the sand in the Dominican Republic."
 photos:
+  - file: ./dominican-republic-03.jpg
+    taken: 2021-12-15T18:35:22
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 55mm
+      aperture: f/4.5
+      shutter: 1/500
+      iso: 200
+    title: ""
+    alt: A long walkway between tall stone walls leading towards a tower
+  - file: ./dominican-republic-04.jpg
+    taken: 2021-12-18T14:59:15
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 55mm
+      aperture: f/7.1
+      shutter: 1/500
+      iso: 100
+    title: ""
+    alt: A rainbow over palm trees and thatched beach umbrellas
+    subject: beach
   - file: ./dominican-republic-01.jpg
     taken: 2021-12-28T16:24:30
     camera: Canon EOS M50
@@ -27,5 +50,8 @@ photos:
       iso: 200
     title: ""
     alt: A lone figure standing in the sea at sunset under orange clouds
+    subject: beach
 cover: ./dominican-republic-02.jpg
 coverPosition: 50% 40%
+banner: ./banner.jpg
+bannerPosition: 52% 50%

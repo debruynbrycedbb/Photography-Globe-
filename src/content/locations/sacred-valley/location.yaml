@@ -17,6 +17,7 @@ photos:
       iso: 100
     title: Inca terraces
     alt: Curved Inca agricultural terraces on a dry hillside under a blue sky
+    subject: terraces
   - file: ./sacred-valley-02.jpg
     taken: 2022-08-05T16:14:01
     camera: Canon EOS M50
@@ -28,6 +29,7 @@ photos:
       iso: 100
     title: ""
     alt: A bare branch against mist rolling over a dark mountainside
+    subject: cloud
   - file: ./sacred-valley-03.jpg
     taken: 2022-08-05T18:38:00
     camera: Canon EOS M50
@@ -39,6 +41,79 @@ photos:
       iso: 200
     title: Salineras de Maras
     alt: A worker among the terraced salt pans of Maras
+    subject: salt
+  - file: ./sacred-valley-08.jpg
+    taken: 2022-08-05T18:52:45
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 200mm
+      aperture: f/10
+      shutter: 1/640
+      iso: 125
+    title: Salineras de Maras
+    alt: Close-up of the white-edged salt pans of Maras
+    subject: salt
+  - file: ./sacred-valley-09.jpg
+    taken: 2022-08-05T18:52:57
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 122mm
+      aperture: f/8
+      shutter: 1/640
+      iso: 100
+    title: Salineras de Maras
+    alt: Terraced salt pans below a red hillside
+    subject: salt
+  - file: ./sacred-valley-10.jpg
+    taken: 2022-08-05T18:57:07
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 15mm
+      aperture: f/10
+      shutter: 1/500
+      iso: 100
+    title: Salineras de Maras
+    alt: Rows of salt pans stepping down a valley
+    subject: salt
+  - file: ./sacred-valley-11.jpg
+    taken: 2022-08-05T20:15:19
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 114mm
+      aperture: f/8
+      shutter: 1/640
+      iso: 100
+    title: ""
+    alt: Curved stone terraces stepping down in rings
+    subject: terraces
+  - file: ./sacred-valley-12.jpg
+    taken: 2022-08-07T15:46:12
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 162mm
+      aperture: f/5.6
+      shutter: 1/800
+      iso: 1250
+    title: ""
+    alt: A forested peak rising out of the cloud
+    subject: cloud
+  - file: ./sacred-valley-13.jpg
+    taken: 2022-08-07T16:07:22
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 55mm
+      aperture: f/4.5
+      shutter: 1/200
+      iso: 100
+    title: Machu Picchu
+    alt: The ruins of Machu Picchu emerging from the mist
+    subject: machu-picchu
   - file: ./sacred-valley-04.jpg
     taken: 2022-08-07T16:47:11
     camera: Canon EOS M50
@@ -50,14 +125,20 @@ photos:
       iso: 100
     title: Machu Picchu
     alt: The ruins of Machu Picchu beneath Huayna Picchu, with clouds over the mountains
+    subject: machu-picchu
   - file: ./sacred-valley-05.jpg
     title: ""
     alt: A glacier between dark rocky peaks under a blue sky
+    subject: peaks
   - file: ./sacred-valley-06.jpg
     title: ""
     alt: Jagged peaks disappearing into thick cloud
+    subject: peaks
   - file: ./sacred-valley-07.jpg
     title: ""
     alt: Low cloud drifting over a steep hillside dotted with trees
+    subject: cloud
 cover: ./sacred-valley-04.jpg
 coverPosition: 50% 48%
+banner: ./banner.jpg
+bannerPosition: 40% 50%

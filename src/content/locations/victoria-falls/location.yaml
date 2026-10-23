@@ -16,6 +16,7 @@ photos:
       iso: 640
     title: Victoria Falls
     alt: A rainbow arching over the gorge at Victoria Falls
+    subject: falls
   - file: ./victoria-falls-02.jpg
     taken: 2024-01-03T18:52:37
     camera: Canon EOS M50
@@ -27,6 +28,7 @@ photos:
       iso: 125
     title: Victoria Falls
     alt: A waterfall plunging into the gorge beside green forest
+    subject: falls
   - file: ./victoria-falls-03.jpg
     taken: 2024-01-03T19:14:40
     camera: Canon EOS M50
@@ -38,6 +40,7 @@ photos:
       iso: 100
     title: ""
     alt: A rainbow in the spray above the edge of the gorge
+    subject: falls
   - file: ./victoria-falls-04.jpg
     taken: 2024-01-03T19:17:12
     camera: Canon EOS M50
@@ -49,6 +52,18 @@ photos:
       iso: 100
     title: Victoria Falls
     alt: Spray rising from the falls under a blue sky
+    subject: falls
+  - file: ./victoria-falls-06.jpg
+    taken: 2024-01-04T19:47:50
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 200mm
+      aperture: f/6.3
+      shutter: 1/640
+      iso: 1000
+    title: Crocodile
+    alt: A crocodile gliding through rippling water
   - file: ./victoria-falls-05.jpg
     taken: 2024-01-04T20:12:25
     camera: Canon EOS M50
@@ -62,3 +77,5 @@ photos:
     alt: Palm trees silhouetted against an orange sunset
 cover: ./victoria-falls-01.jpg
 coverPosition: 50% 45%
+banner: ./banner.jpg
+bannerPosition: 50% 50%

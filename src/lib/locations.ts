@@ -112,10 +112,11 @@ export function countriesCount(locs: Location[]): number {
 // ---------- Responsive image sources ----------
 export const GRID_WIDTHS = [480, 800, 1200, 1600, 2400];
 
-export async function responsive(img: ImageMetadata, widths = GRID_WIDTHS) {
+export async function responsive(img: ImageMetadata, widths = GRID_WIDTHS, quality = 82) {
   const usable = widths.filter((w) => w <= img.width);
-  if (!usable.length || usable[usable.length - 1] < img.width) usable.push(Math.min(img.width, 2400));
-  const variants = await Promise.all(usable.map((w) => getImage({ src: img, width: w, format: 'webp', quality: 82 })));
+  const cap = Math.max(...widths, 2400);
+  if (!usable.length || usable[usable.length - 1] < Math.min(img.width, cap)) usable.push(Math.min(img.width, cap));
+  const variants = await Promise.all(usable.map((w) => getImage({ src: img, width: w, format: 'webp', quality })));
   return {
     src: variants[Math.min(1, variants.length - 1)].src,
     srcset: variants.map((v, i) => `${v.src} ${usable[i]}w`).join(', '),
@@ -156,10 +157,10 @@ async function paletteOf(file: string): Promise<Palette> {
 }
 
 /** Palette of the cover image, or of photo `index`. */
-export async function palette(loc: Location, index: number | 'cover' = 'cover'): Promise<Palette> {
+export async function palette(loc: Location, index: number | 'cover' | 'banner' = 'cover'): Promise<Palette> {
   try {
     const { dir, data } = await rawEntry(loc);
-    const rel = index === 'cover' ? data.cover : data.photos?.[index]?.file;
+    const rel = index === 'cover' ? data.cover : index === 'banner' ? data.banner || data.cover : data.photos?.[index]?.file;
     return await paletteOf(path.resolve(dir, rel));
   } catch {
     return { avg: '#0b1518', top: '#0b1518', mid: '#0b1518', bottom: '#0b1518' };
@@ -167,8 +168,38 @@ export async function palette(loc: Location, index: number | 'cover' = 'cover'):
 }
 
 /** Compact data the globe needs on the client. */
+/**
+ * Gallery order: the order in location.yaml, but photos with the same `subject`
+ * (e.g. several lions) are spread out so they never sit next to each other when
+ * that can be avoided. Returns indices into loc.data.photos.
+ */
+export function galleryOrder(loc: Location): number[] {
+  const subj = (i: number) => loc.data.photos[i].subject?.trim().toLowerCase() || null;
+  const left = loc.data.photos.map((_, i) => i);
+  const out: number[] = [];
+  while (left.length) {
+    const last = out.length ? subj(out[out.length - 1]) : null;
+    const prev = out.length > 1 ? subj(out[out.length - 2]) : null;
+    // The most common remaining subject must be placed now if it would otherwise run out of gaps.
+    const counts = new Map<string, number>();
+    for (const i of left) { const s = subj(i); if (s) counts.set(s, (counts.get(s) ?? 0) + 1); }
+    let top: string | null = null;
+    let topN = 0;
+    for (const [s, n] of counts) if (n > topN) { top = s; topN = n; }
+    let k = -1;
+    if (top && top !== last && (topN - 1) * 2 >= left.length - 1) k = left.findIndex((i) => subj(i) === top);
+    // Otherwise the next photo in order that differs from the last two shown...
+    if (k < 0) k = left.findIndex((i) => !subj(i) || (subj(i) !== last && subj(i) !== prev));
+    // ...or at least from the last one.
+    if (k < 0) k = left.findIndex((i) => !subj(i) || subj(i) !== last);
+    if (k < 0) k = 0;
+    out.push(left.splice(k, 1)[0]);
+  }
+  return out;
+}
+
 export async function clientSummary(loc: Location) {
-  const pal = await palette(loc);
+  const pal = await palette(loc, 'banner');
   return {
     slug: loc.id,
     name: loc.data.name,

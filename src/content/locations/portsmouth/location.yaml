@@ -17,6 +17,7 @@ photos:
       iso: 400
     title: Please recycle me
     alt: A red bottle cap reading 'please recycle me' on wet tarmac
+    subject: litter
   - file: ./portsmouth-02.jpg
     taken: 2021-10-14T13:23:36
     camera: Canon EOS M50
@@ -49,6 +50,7 @@ photos:
       iso: 200
     title: ""
     alt: A blue rubber glove and litter floating in green water
+    subject: litter
   - file: ./portsmouth-05.jpg
     taken: 2022-01-12T16:40:42
     camera: Canon EOS M50
@@ -62,3 +64,5 @@ photos:
     alt: Moss growing along the edge of an old brick wall
 cover: ./portsmouth-02.jpg
 coverPosition: 50% 45%
+banner: ./banner.jpg
+bannerPosition: 50% 50%

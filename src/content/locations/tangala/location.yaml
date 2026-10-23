@@ -6,6 +6,41 @@ coordinates:
   lng: 31.16
 description: "Big-game country in the Thornybush Game Reserve, part of the Greater Kruger area: lions, leopard, rhino, elephant and nyala."
 photos:
+  - file: ./tangala-13.jpg
+    taken: 2023-01-01T17:42:59
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 151mm
+      aperture: f/5.6
+      shutter: 1/400
+      iso: 400
+    title: Lionesses
+    alt: Two lionesses resting in the grass
+    subject: lion
+  - file: ./tangala-14.jpg
+    taken: 2023-01-02T18:06:59
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 200mm
+      aperture: f/6.3
+      shutter: 1/200
+      iso: 400
+    title: Leopard
+    alt: Close-up of a leopard in long grass
+    subject: leopard
+  - file: ./tangala-15.jpg
+    taken: 2023-01-03T07:03:20
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 200mm
+      aperture: f/6.3
+      shutter: 1/500
+      iso: 400
+    title: Wild dog
+    alt: An African wild dog standing on a dirt track
   - file: ./tangala-01.jpg
     taken: 2023-01-03T08:37:45
     camera: Canon EOS M50
@@ -17,6 +52,42 @@ photos:
       iso: 1000
     title: Vultures at a carcass
     alt: Vultures crowding around a carcass in the bush, one with its wings spread
+    subject: bird
+  - file: ./tangala-16.jpg
+    taken: 2023-01-03T09:24:24
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 55mm
+      aperture: f/5.6
+      shutter: 1/320
+      iso: 100
+    title: Lion
+    alt: A male lion lying on a sandy track, looking at the camera
+    subject: lion
+  - file: ./tangala-17.jpg
+    taken: 2023-01-03T09:42:52
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 162mm
+      aperture: f/6.3
+      shutter: 1/200
+      iso: 320
+    title: Buffalo
+    alt: A Cape buffalo lying among bushes
+  - file: ./tangala-18.jpg
+    taken: 2023-01-03T18:31:28
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 200mm
+      aperture: f/8
+      shutter: 1/1000
+      iso: 2000
+    title: ""
+    alt: A bird of prey perched on top of a dead tree
+    subject: bird
   - file: ./tangala-02.jpg
     taken: 2023-01-03T18:48:56
     camera: Canon EOS M50
@@ -28,6 +99,19 @@ photos:
       iso: 2000
     title: Nyala
     alt: A nyala bull with spiralled horns looking towards the camera
+    subject: nyala
+  - file: ./tangala-19.jpg
+    taken: 2023-01-04T11:59:52
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 135mm
+      aperture: f/5.6
+      shutter: 1/640
+      iso: 500
+    title: Lionesses
+    alt: Two lionesses on a mound, one standing
+    subject: lion
   - file: ./tangala-03.jpg
     taken: 2023-12-25T14:36:28
     camera: Canon EOS M50
@@ -42,29 +126,40 @@ photos:
   - file: ./tangala-04.jpg
     title: Rhino
     alt: A rhino standing on a sandy track
+    subject: rhino
   - file: ./tangala-05.jpg
     title: Elephant
     alt: An elephant feeding among bushes
+    subject: elephant
   - file: ./tangala-06.jpg
     title: Leopard
     alt: A leopard resting in the fork of a large tree
+    subject: leopard
   - file: ./tangala-07.jpg
     title: Lioness
     alt: Close-up of a lioness lying on the ground, looking up
+    subject: lion
   - file: ./tangala-08.jpg
     title: Elephant
     alt: An elephant walking through the bush
+    subject: elephant
   - file: ./tangala-09.jpg
     title: Rhino and calf
     alt: A rhino lying in long grass beside its calf
+    subject: rhino
   - file: ./tangala-10.jpg
     title: Lioness
     alt: A lioness lying in the grass, staring at the camera
+    subject: lion
   - file: ./tangala-11.jpg
     title: Lioness
     alt: A lioness resting her head in long grass
+    subject: lion
   - file: ./tangala-12.jpg
     title: Nyala
     alt: A young nyala standing among tree branches
+    subject: nyala
 cover: ./tangala-10.jpg
 coverPosition: 50% 45%
+banner: ./banner.jpg
+bannerPosition: 33% 55%

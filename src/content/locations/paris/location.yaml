@@ -73,3 +73,5 @@ photos:
     alt: A long tree-lined avenue leading towards the city
 cover: ./paris-03.jpg
 coverPosition: 50% 38%
+banner: ./banner.jpg
+bannerPosition: 32% 50%

@@ -39,6 +39,7 @@ photos:
       iso: 800
     title: ""
     alt: Soft pink and orange sunset clouds
+    subject: sunset
   - file: ./rotterdam-03.jpg
     taken: 2022-06-19T22:53:21
     camera: Canon EOS M50
@@ -50,6 +51,7 @@ photos:
       iso: 2000
     title: ""
     alt: A tower block against a pink and orange sunset sky
+    subject: sunset
   - file: ./rotterdam-04.jpg
     taken: 2022-10-02T21:40:30
     camera: Canon EOS M50
@@ -61,6 +63,7 @@ photos:
       iso: 100
     title: Willemsbrug
     alt: The red Willemsbrug lit up at night and reflected in the river
+    subject: willemsbrug
   - file: ./rotterdam-05.jpg
     taken: 2024-11-03T19:18:40
     camera: Apple iPhone 13 Pro
@@ -72,5 +75,8 @@ photos:
       iso: 800
     title: Willemsbrug in fog
     alt: The red-lit pylon of the Willemsbrug in thick fog
+    subject: willemsbrug
 cover: ./rotterdam-04.jpg
 coverPosition: 50% 62%
+banner: ./banner.jpg
+bannerPosition: 45% 50%

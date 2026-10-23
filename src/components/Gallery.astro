@@ -8,6 +8,7 @@ import {
   mainCamera,
   mainLens,
   formatDate,
+  galleryOrder,
   settingsLabel,
   withBase,
   locationHref,
@@ -21,8 +22,11 @@ interface Props {
 const { loc, next } = Astro.props;
 const d = loc.data;
 
-const hero = await responsive(d.cover, [800, 1200, 1600, 2400]);
-const pal = await palette(loc);
+// The full-screen header uses the landscape banner when there is one, at up to 4K width.
+const heroImg = d.banner ?? d.cover;
+const heroPos = d.banner ? d.bannerPosition : d.coverPosition;
+const hero = await responsive(heroImg, [960, 1440, 1920, 2560, 3200, 4000], 86);
+const pal = await palette(loc, 'banner');
 const visits = visitLabels(loc);
 const years = yearsLabel(loc);
 const camera = mainCamera(loc);
@@ -34,7 +38,8 @@ const medianRatio = ratios[Math.floor(ratios.length / 2)];
 const portraitSet = medianRatio < 1;
 
 const photos = await Promise.all(
-  d.photos.map(async (p, i) => {
+  galleryOrder(loc).map(async (i) => {
+    const p = d.photos[i];
     const r = await responsive(p.file);
     const ar = p.file.width / p.file.height;
     const pal = await palette(loc, i);
@@ -74,7 +79,7 @@ const photos = await Promise.all(
         height={hero.height}
         alt=""
         fetchpriority="high"
-        style={`object-position:${d.coverPosition}`}
+        style={`object-position:${heroPos}`}
         decoding="async"
         data-hero-img
       />

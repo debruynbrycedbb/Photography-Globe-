@@ -17,6 +17,7 @@ photos:
       iso: 100
     title: Snow in Arnhem
     alt: A snowy street with bare trees and a brick archway
+    subject: snow
   - file: ./arnhem-02.jpg
     taken: 2026-01-03T13:28:26
     camera: Canon EOS M50
@@ -28,6 +29,18 @@ photos:
       iso: 100
     title: ""
     alt: Snow-covered rooftops and gardens
+    subject: snow
+  - file: ./arnhem-05.jpg
+    taken: 2026-02-07T17:00:32
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 127mm
+      aperture: f/7.1
+      shutter: 1/500
+      iso: 100
+    title: ""
+    alt: An old boat with a green canopy under a teal sky
   - file: ./arnhem-03.jpg
     taken: 2026-02-26T20:53:06
     camera: Canon EOS M50
@@ -39,6 +52,7 @@ photos:
       iso: 320
     title: ""
     alt: Modern houses with dark roofs reflected in still water beside reeds
+    subject: water
   - file: ./arnhem-04.jpg
     taken: 2026-04-01T22:14:12
     camera: Canon EOS M50
@@ -50,5 +64,19 @@ photos:
       iso: 640
     title: ""
     alt: Warm light rippling across dark water in abstract reflections
+    subject: water
+  - file: ./arnhem-06.jpg
+    taken: 2026-05-14T20:11:15
+    camera: Apple iPhone 13 Pro
+    lens: iPhone 13 Pro back triple camera 5.7mm f/1.5
+    settings:
+      focal: 6mm
+      aperture: f/1.5
+      shutter: 1/880
+      iso: 50
+    title: ""
+    alt: A rainbow seen beneath a concrete bridge, with graffiti on the wall below
 cover: ./arnhem-01.jpg
 coverPosition: 50% 50%
+banner: ./banner.jpg
+bannerPosition: 50% 50%

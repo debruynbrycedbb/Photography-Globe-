@@ -47,6 +47,10 @@ const locations = defineCollection({
         cover: image(),
         /** Which part of the cover stays visible when it is cropped (CSS object-position, e.g. "50% 30%"). */
         coverPosition: z.string().default('50% 50%'),
+        /** Optional landscape photo for the full-screen gallery header (falls back to the cover). */
+        banner: image().optional(),
+        /** Which part of the banner stays visible when it is cropped (e.g. "40% 50%" keeps more of the left). */
+        bannerPosition: z.string().default('50% 50%'),
         photos: z
           .array(
             z.object({
@@ -67,6 +71,8 @@ const locations = defineCollection({
                 })
                 .optional(),
               tags: z.array(z.string()).default([]),
+              /** What the photo shows (e.g. "lion"). Photos with the same subject are spread apart in the gallery. */
+              subject: z.string().optional(),
               featured: z.boolean().default(false),
             }),
           )

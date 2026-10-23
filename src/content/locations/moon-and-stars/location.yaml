@@ -40,3 +40,5 @@ photos:
 cover: ./moon-and-stars-01.jpg
 body: moon
 coverPosition: 50% 50%
+banner: ./banner.jpg
+bannerPosition: 50% 52%

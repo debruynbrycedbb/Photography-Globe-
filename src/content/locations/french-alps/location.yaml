@@ -16,6 +16,7 @@ photos:
       iso: 800
     title: ""
     alt: Golden evening light on a rocky ridge above pine forest
+    subject: mountains
   - file: ./french-alps-02.jpg
     taken: 2025-02-20T14:05:13
     camera: Canon EOS M50
@@ -27,8 +28,12 @@ photos:
       iso: 100
     title: ""
     alt: Snow-covered mountains with cloud drifting across the peaks
+    subject: mountains
   - file: ./french-alps-03.jpg
     title: ""
     alt: Jagged snowy peaks under a clear sky
+    subject: mountains
 cover: ./french-alps-02.jpg
 coverPosition: 50% 40%
+banner: ./banner.jpg
+bannerPosition: 55% 50%

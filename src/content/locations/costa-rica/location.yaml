@@ -5,6 +5,29 @@ coordinates:
   lng: -84.2306
 description: "Rainforest coastline and the crater lake of Poás Volcano in Costa Rica."
 photos:
+  - file: ./costa-rica-04.jpg
+    taken: 2022-08-15T02:15:38
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 55mm
+      aperture: f/4.5
+      shutter: 1/80
+      iso: 6400
+    title: ""
+    alt: Red cone-shaped ginger flowers among green leaves
+  - file: ./costa-rica-05.jpg
+    taken: 2022-08-15T14:50:28
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 35mm
+      aperture: f/6.3
+      shutter: 1/200
+      iso: 100
+    title: ""
+    alt: Palm trees and a forested headland along the coast in evening light
+    subject: coast
   - file: ./costa-rica-01.jpg
     taken: 2022-08-16T17:39:44
     camera: Canon EOS M50
@@ -16,6 +39,7 @@ photos:
       iso: 100
     title: ""
     alt: Waves breaking against a rocky shore below dense tropical forest
+    subject: coast
   - file: ./costa-rica-02.jpg
     taken: 2022-08-19T19:00:38
     camera: Canon EOS M50
@@ -40,3 +64,5 @@ photos:
     alt: A small bird in flight against a turquoise sky
 cover: ./costa-rica-02.jpg
 coverPosition: 50% 55%
+banner: ./banner.jpg
+bannerPosition: 55% 50%
