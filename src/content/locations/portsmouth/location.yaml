@@ -1,0 +1,64 @@
+name: Portsmouth
+country: United Kingdom
+region: England
+coordinates:
+  lat: 50.8198
+  lng: -1.088
+description: "Small details from Portsmouth on the south coast of England: gulls, fishing nets, moss on old brick and litter in the water."
+photos:
+  - file: ./portsmouth-01.jpg
+    taken: 2021-10-14T12:53:12
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 200mm
+      aperture: f/6.3
+      shutter: 1/800
+      iso: 400
+    title: Please recycle me
+    alt: A red bottle cap reading 'please recycle me' on wet tarmac
+  - file: ./portsmouth-02.jpg
+    taken: 2021-10-14T13:23:36
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 200mm
+      aperture: f/7.1
+      shutter: 1/800
+      iso: 100
+    title: Gull
+    alt: A gull perched on the white roof of a boat
+  - file: ./portsmouth-03.jpg
+    taken: 2021-10-14T13:44:11
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 100mm
+      aperture: f/5
+      shutter: 1/500
+    title: Fishing net
+    alt: A tangle of turquoise fishing net
+  - file: ./portsmouth-04.jpg
+    taken: 2021-10-14T13:53:55
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 114mm
+      aperture: f/5.6
+      shutter: 1/400
+      iso: 200
+    title: ""
+    alt: A blue rubber glove and litter floating in green water
+  - file: ./portsmouth-05.jpg
+    taken: 2022-01-12T16:40:42
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 94mm
+      aperture: f/7.1
+      shutter: 1/500
+      iso: 5000
+    title: ""
+    alt: Moss growing along the edge of an old brick wall
+cover: ./portsmouth-02.jpg
+coverPosition: 50% 45%

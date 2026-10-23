@@ -39,6 +39,8 @@ const locations = defineCollection({
         notes: z.string().optional(),
         order: z.number().optional(),
         sample: z.boolean().default(false),
+        /** "moon" puts the location on the Moon (coordinates are then lunar lat/lng). */
+        body: z.enum(['earth', 'moon']).default('earth'),
         visits: z
           .array(z.object({ from: dateLike, to: dateLike.optional(), note: z.string().optional() }))
           .default([]),

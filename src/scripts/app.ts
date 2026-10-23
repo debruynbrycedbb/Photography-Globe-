@@ -1,7 +1,7 @@
 import gsap from 'gsap';
 import { Vector3 } from 'three';
-import { Globe } from './globe/Globe';
-import { angleDelta } from './globe/geo';
+import { Globe, MOON_HOVER } from './globe/Globe';
+import { angleDelta, latLngToVec3 } from './globe/geo';
 import { Lightbox } from './lightbox';
 
 interface Loc {
@@ -20,6 +20,7 @@ interface Loc {
   thumb: string;
   palette: { avg: string; top: string; mid: string; bottom: string };
   coverPosition: string;
+  body: 'earth' | 'moon';
 }
 
 type Mode = 'globe' | 'gallery' | 'travelling';
@@ -63,6 +64,9 @@ export function startApp() {
   /** True while the selected location is centred and waiting for a second tap. */
   let cued = false;
   let current = initialSlug ? indexOf(initialSlug) : -1;
+  const isMoon = (i: number) => data[i]?.body === 'moon';
+  /** Last Earth location selected, so "Back to Earth" returns to it. */
+  let lastEarth = isMoon(selected) ? Math.max(0, data.findIndex((l) => l.body !== 'moon')) : selected;
 
   // ------------------------------------------------------------ globe
   let globe: Globe | null = null;
@@ -80,12 +84,17 @@ export function startApp() {
       onHover: (i) => {
         if (i === null) tip.classList.remove('is-visible');
         else {
-          tip.textContent = `${data[i].name}, ${data[i].country}`;
+          tip.textContent = i === MOON_HOVER ? 'Visit the Moon' : `${data[i].name}, ${data[i].country}`;
           tip.classList.add('is-visible');
         }
       },
       onPick: (i) => select(i),
       onActivate: (i) => enter(i),
+      onMoon: () => {
+        const m = data.findIndex((l) => l.body === 'moon');
+        if (m >= 0) select(m);
+      },
+      onCluster: (ids) => zoomToCluster(ids),
       onInteract: () => root.classList.add('has-interacted'),
       fitBox: () => {
         const header = document.querySelector('[data-header]')?.getBoundingClientRect();
@@ -108,6 +117,9 @@ export function startApp() {
       if (globe && globe.hovered >= 0) {
         const h = screen[globe.hovered];
         tip.style.transform = `translate3d(${h.x}px, ${h.y}px, 0)`;
+      } else if (globe && globe.hovered === MOON_HOVER) {
+        const m = globe.moonOnScreen();
+        tip.style.transform = `translate3d(${m.x}px, ${m.y - m.r + 8}px, 0)`;
       }
     };
     stage.addEventListener('globe:lost', fallback);
@@ -121,8 +133,15 @@ export function startApp() {
           globe!.selected = selected;
           if (mode === 'gallery') {
             // Deep link: park the camera at the surface so the return journey starts from here.
-            const l = data[current];
-            Object.assign(globe!.view, { lat: l.lat, lng: l.lng, descend: 1, layout: 0, fov: 52, intro: 1, atmosphere: 2.2 });
+            if (isMoon(current)) {
+              // Place the Moon where it normally sits, then put the camera on it.
+              globe!.view.intro = 1;
+              globe!.freezeMoon();
+              globe!.view.body = 1;
+              root.classList.add('on-moon');
+            }
+            const p = globe!.pointLatLng(current);
+            Object.assign(globe!.view, { lat: p.lat, lng: p.lng, descend: 1, layout: 0, fov: 52, intro: 1, atmosphere: 2.2 });
             globe!.interactive = false;
             globe!.renderFrame();
           } else {
@@ -190,17 +209,25 @@ export function startApp() {
       announcer.textContent = `${data[i].name}, ${data[i].country} selected.`;
       prefetch(data[i]);
     }
+    if (!isMoon(i)) lastEarth = i;
     if (globe) {
       globe.selected = i;
       if (fly && mode === 'globe') {
-        const t = globe.targetFor(i);
+        if (isMoon(i) !== globe.onMoon) {
+          flyToBody(i);
+          return;
+        }
+        // Zoom in when this location's marker would overlap a neighbour's.
+        const zoom = globe.zoomToSeparate(i);
+        const t = globe.targetFor(i, zoom);
         globe.halt();
         globe.setFlying(true);
         cued = false;
-        gsap.killTweensOf(globe.view, 'lat,lng');
+        gsap.killTweensOf(globe.view, 'lat,lng,zoom');
         gsap.to(globe.view, {
           lat: t.lat,
           lng: t.lng,
+          zoom,
           duration: reduced ? 0 : 1.3,
           ease: 'power3.inOut',
           onComplete: () => {
@@ -211,6 +238,66 @@ export function startApp() {
       }
     }
   }
+
+  /** Fly the camera between the Earth and the Moon, arriving on location i. */
+  function flyToBody(i: number): Promise<void> {
+    if (!globe) return Promise.resolve();
+    const g = globe;
+    const toMoon = isMoon(i);
+    g.halt();
+    g.setFlying(true);
+    g.interactive = false;
+    g.hovered = -1;
+    tip.classList.remove('is-visible');
+    cued = false;
+    gsap.killTweensOf(g.view);
+    gsap.killTweensOf(g, 'moonLock');
+    if (toMoon && g.view.body < 0.01) g.freezeMoon();
+    const zoom = toMoon ? 1 : g.zoomToSeparate(i);
+    const t = g.targetFor(i, zoom);
+    root.classList.toggle('on-moon', toMoon);
+    announcer.textContent = toMoon ? 'Travelling to the Moon.' : 'Back to the Earth.';
+    return new Promise((done) => {
+      const finish = () => {
+        g.setFlying(false);
+        g.interactive = true;
+        cued = true;
+        done();
+      };
+      const dur = reduced ? 0 : 2.4;
+      const tl = gsap.timeline({ onComplete: finish });
+      tl.to(g.view, { body: toMoon ? 1 : 0, lat: t.lat, lng: t.lng, zoom, duration: dur, ease: 'power2.inOut' }, 0);
+      if (!toMoon) tl.to(g, { moonLock: 0, duration: dur, ease: 'power2.inOut' }, 0);
+    });
+  }
+
+  /** Several markers overlap where the visitor tapped: zoom in until they separate. */
+  function zoomToCluster(ids: number[]) {
+    if (!globe) return;
+    const vs = ids.map((i) => latLngToVec3(data[i].lat, data[i].lng, 1));
+    let gap = Math.PI;
+    vs.forEach((a, k) => vs.slice(k + 1).forEach((b) => (gap = Math.min(gap, a.angleTo(b)))));
+    const c = vs.reduce((s, v) => s.add(v), new Vector3()).normalize();
+    const lat = Math.asin(c.y) / (Math.PI / 180);
+    const lng = Math.atan2(-c.z, c.x) / (Math.PI / 180);
+    const zoom = Math.min(globe.view.zoom, globe.zoomForGap(gap, 44));
+    globe.halt();
+    globe.setFlying(true);
+    gsap.killTweensOf(globe.view, 'lat,lng,zoom');
+    gsap.to(globe.view, {
+      lat: lat - 6 * zoom,
+      lng: globe.view.lng + angleDelta(globe.view.lng, lng),
+      zoom,
+      duration: reduced ? 0 : 1.2,
+      ease: 'power3.inOut',
+      onComplete: () => globe?.setFlying(false),
+    });
+    announcer.textContent = `Zoomed in on ${ids.map((i) => data[i].name).join(', ')}.`;
+  }
+
+  $('[data-back-earth]')?.addEventListener('click', () => {
+    if (mode === 'globe' && globe?.onMoon) select(lastEarth);
+  });
 
   // Keep the strip's scroll arrows vertically centred on the thumbnails.
   const firstThumb = document.querySelector<HTMLElement>('.strip-thumb');
@@ -293,6 +380,10 @@ export function startApp() {
     let article: HTMLElement;
     try {
       if (globe) {
+        if (isMoon(i) !== globe.onMoon) {
+          globe.start();
+          await flyToBody(i);
+        }
         globe.interactive = false;
         globe.halt();
         globe.hovered = -1;
@@ -308,9 +399,10 @@ export function startApp() {
 
       if (globe && !reduced) {
         const v = globe.view;
-        const lng = v.lng + angleDelta(v.lng, l.lng);
+        const p = globe.pointLatLng(i);
+        const lng = v.lng + angleDelta(v.lng, p.lng);
         const tl = gsap.timeline();
-        tl.to(v, { lat: l.lat, lng, layout: 0, zoom: 1, duration: 1.25, ease: 'power2.inOut' }, 0)
+        tl.to(v, { lat: p.lat, lng, layout: 0, zoom: Math.min(v.zoom, 1), duration: 1.25, ease: 'power2.inOut' }, 0)
           .to(v, { descend: 0.42, duration: 1.25, ease: 'power1.in' }, 0)
           .to(v, { descend: 1, fov: 52, duration: 1.15, ease: 'power2.in' }, 1.25)
           .to(v, { atmosphere: 2.2, duration: 1.0, ease: 'none' }, 1.0)

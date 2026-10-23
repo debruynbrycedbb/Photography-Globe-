@@ -93,6 +93,12 @@ photos:
 
 The build **checks every location**. If a photo file is missing, a coordinate is out of range or a date is malformed, it stops and tells you which file and field to fix, rather than publishing a broken page.
 
+### Locations on the Moon
+
+A location with `body: moon` sits on the Moon instead of the Earth (see `src/content/locations/moon-and-stars/`). Its `coordinates` are lunar latitude/longitude: `lat: 12, lng: -90` is near the middle of the side that faces visitors. Visitors reach it by clicking the small Moon beside the globe, or from the location strip. Moon locations don't count towards the "countries" total.
+
+The Moon's surface is drawn by `scripts/build-moon-texture.py` (procedural, no third-party imagery). Re-run it only if you want a different surface.
+
 ### Choosing a cover and framing it
 
 `cover` picks the photo used for the homepage panel, the location strip and the full-screen gallery opening. Most photos are cropped to fit those spaces, so `coverPosition` sets which part stays visible: `"50% 30%"` keeps more of the top, `"50% 70%"` more of the bottom.

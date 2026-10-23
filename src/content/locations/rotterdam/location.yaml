@@ -1,0 +1,65 @@
+name: Rotterdam
+country: Netherlands
+region: South Holland
+coordinates:
+  lat: 51.9244
+  lng: 4.4777
+description: "Rotterdam's red Willemsbrug by night and in fog, spring blossom and evening light on the city."
+photos:
+  - file: ./rotterdam-01.jpg
+    taken: 2022-03-24T19:03:51
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 55mm
+      aperture: f/4.5
+      shutter: 1/200
+      iso: 100
+    title: Blossom
+    alt: Pink blossom along a tree branch
+  - file: ./rotterdam-02.jpg
+    taken: 2022-06-19T22:50:59
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 55mm
+      aperture: f/4.5
+      shutter: 1/200
+      iso: 1250
+    title: ""
+    alt: A tall copper-coloured tower lit by the evening sun
+  - file: ./rotterdam-03.jpg
+    taken: 2022-06-19T22:53:21
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 88mm
+      aperture: f/5
+      shutter: 1/320
+      iso: 2000
+    title: ""
+    alt: A tower block against a pink and orange sunset sky
+  - file: ./rotterdam-04.jpg
+    taken: 2022-10-02T21:40:30
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 24mm
+      aperture: f/4.5
+      shutter: 8s
+      iso: 100
+    title: Willemsbrug
+    alt: The red Willemsbrug lit up at night and reflected in the river
+  - file: ./rotterdam-05.jpg
+    taken: 2024-11-03T19:18:40
+    camera: Apple iPhone 13 Pro
+    lens: iPhone 13 Pro back triple camera 5.7mm f/1.5
+    settings:
+      focal: 6mm
+      aperture: f/1.5
+      shutter: 1/25
+      iso: 800
+    title: Willemsbrug in fog
+    alt: The red-lit pylon of the Willemsbrug in thick fog
+cover: ./rotterdam-04.jpg
+coverPosition: 50% 62%

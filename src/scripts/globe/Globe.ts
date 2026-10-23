@@ -13,6 +13,7 @@ import {
   PerspectiveCamera,
   PlaneGeometry,
   Points,
+  Quaternion,
   Scene,
   ShaderMaterial,
   SphereGeometry,
@@ -31,7 +32,12 @@ export interface GlobePoint {
   country: string;
   lat: number;
   lng: number;
+  /** Which sphere the point sits on. Moon points use the Moon's own lat/lng. */
+  body?: 'earth' | 'moon';
 }
+
+/** Marker index used for "the Moon itself" in hover callbacks. */
+export const MOON_HOVER = -2;
 
 export interface GlobeOptions {
   base: string;
@@ -40,6 +46,10 @@ export interface GlobeOptions {
   onPick?: (index: number) => void;
   onActivate?: (index: number) => void;
   onInteract?: () => void;
+  /** The small Moon was clicked while looking at the Earth. */
+  onMoon?: () => void;
+  /** Several markers overlap where the visitor tapped; app zooms in to separate them. */
+  onCluster?: (indices: number[]) => void;
   /**
    * Free vertical space for the globe on wide screens, in pixels from the top of the
    * stage (between the header and the location strip). The globe is sized and centred
@@ -68,7 +78,12 @@ export interface GlobeView {
   fov: number;
   intro: number;
   atmosphere: number;
+  /** 0 = camera frames the Earth, 1 = camera frames the Moon. */
+  body: number;
 }
+
+export const ZOOM_MIN = 0.24;
+export const ZOOM_MAX = 1.55;
 
 export interface CloudState {
   opacity: number;
@@ -77,7 +92,12 @@ export interface CloudState {
 }
 
 export class Globe {
-  readonly view: GlobeView = { lat: 28, lng: 12, zoom: 1, descend: 0, layout: 1, fov: 35, intro: 0, atmosphere: 1 };
+  readonly view: GlobeView = { lat: 28, lng: 12, zoom: 1, descend: 0, layout: 1, fov: 35, intro: 0, atmosphere: 1, body: 0 };
+  /**
+   * 0 = the small Moon follows the camera (always in the same corner of the screen),
+   * 1 = the Moon is fixed in space (while the camera flies to or around it).
+   */
+  moonLock = 0;
   readonly clouds: CloudState = { opacity: 0, travel: 0, tint: new Vector3(0.8, 0.85, 0.9) };
   interactive = true;
   selected = -1;
@@ -94,6 +114,17 @@ export class Globe {
   private markerMat!: ShaderMaterial;
   private markerGeo = new BufferGeometry();
   private markerPos: Vector3[] = [];
+  private moonGroup = new Group();
+  private moonMat!: ShaderMaterial;
+  private moonMarkerMat!: ShaderMaterial;
+  private moonMarkerGeo = new BufferGeometry();
+  private moonIdx: number[] = [];
+  /** Where the Moon was frozen in space when the camera set off towards it. */
+  private moonFrozen = { pos: new Vector3(), quat: new Quaternion(), scale: 0.2 };
+  private moonFollow = { pos: new Vector3(), quat: new Quaternion(), scale: 0.2 };
+  private moonScreen = { x: -999, y: -999, r: 0 };
+  private center = new Vector3();
+  private bodyR = 1;
   private starMat!: ShaderMaterial;
   private cloudMat!: ShaderMaterial;
   private orbit = new Group();
@@ -152,11 +183,12 @@ export class Globe {
         ),
       );
 
-    const [mask, detail, borders, coast] = await Promise.all([
+    const [mask, detail, borders, coast, moonTex] = await Promise.all([
       load(`${this.opts.base}textures/globe-mask-${size}.png`),
       load(`${this.opts.base}textures/globe-detail-${size}.jpg`),
       loadLines(`${this.opts.base}data/borders.bin`, 1.0015),
       loadLines(`${this.opts.base}data/coast.bin`, 1.0018),
+      load(`${this.opts.base}textures/moon-2048.jpg`),
     ]);
 
     this.buildEarth(mask, detail, size);
@@ -164,6 +196,7 @@ export class Globe {
     this.buildStars();
     this.buildOrbit();
     this.buildClouds();
+    this.buildMoon(moonTex);
     this.setPoints(points);
     this.bindInput();
     this.resize();
@@ -352,25 +385,66 @@ export class Globe {
     this.cloudScene.add(quad);
   }
 
+  private buildMoon(tex: Texture) {
+    this.moonMat = new ShaderMaterial({
+      vertexShader: S.moonVertex,
+      fragmentShader: S.moonFragment,
+      uniforms: {
+        uMap: { value: tex },
+        uTexel: { value: [1.5 / 2048, 1.5 / 1024] },
+        uAccent: { value: ACCENT },
+        uFade: { value: 0 },
+        uHover: { value: 0 },
+      },
+      transparent: true,
+    });
+    const moon = new Mesh(new SphereGeometry(1, 96, 64), this.moonMat);
+    this.moonGroup.add(moon);
+    this.scene.add(this.moonGroup);
+  }
+
   setPoints(points: GlobePoint[]) {
     this.points = points;
+    const earth: number[] = [];
+    this.moonIdx = [];
+    points.forEach((p, i) => (p.body === 'moon' ? this.moonIdx : earth).push(i));
+    // Positions: Earth markers in world space, Moon markers in the Moon's local space (radius 1).
     this.markerPos = points.map((p) => latLngToVec3(p.lat, p.lng, 1.008));
-    const pos = new Float32Array(points.length * 3);
-    const idx = new Float32Array(points.length);
-    this.markerPos.forEach((v, i) => {
-      pos.set([v.x, v.y, v.z], i * 3);
-      idx[i] = i;
-    });
-    this.markerGeo.setAttribute('position', new BufferAttribute(pos, 3));
-    this.markerGeo.setAttribute('aIndex', new BufferAttribute(idx, 1));
+    const fill = (geo: BufferGeometry, ids: number[]) => {
+      const pos = new Float32Array(ids.length * 3);
+      const idx = new Float32Array(ids.length);
+      ids.forEach((i, k) => {
+        const v = this.markerPos[i];
+        pos.set([v.x, v.y, v.z], k * 3);
+        idx[k] = i;
+      });
+      geo.setAttribute('position', new BufferAttribute(pos, 3));
+      geo.setAttribute('aIndex', new BufferAttribute(idx, 1));
+    };
+    fill(this.markerGeo, earth);
+    fill(this.moonMarkerGeo, this.moonIdx);
     if (!this.markerMat) {
       this.markerMat = this.makeMarkerMaterial(12);
       const m = new Points(this.markerGeo, this.markerMat);
       m.frustumCulled = false;
       m.renderOrder = 2;
       this.scene.add(m);
+      this.moonMarkerMat = this.makeMarkerMaterial(12);
+      const mm = new Points(this.moonMarkerGeo, this.moonMarkerMat);
+      mm.frustumCulled = false;
+      mm.renderOrder = 2;
+      this.moonGroup.add(mm);
     }
     this.screen = points.map(() => ({ x: 0, y: 0, facing: 0 }));
+  }
+
+  isMoon(i: number) {
+    return this.points[i]?.body === 'moon';
+  }
+
+  /** Which body the camera is (mostly) looking at. */
+  get onMoon() {
+    return this.view.body > 0.5;
   }
 
   // ------------------------------------------------------------------ layout
@@ -408,7 +482,7 @@ export class Globe {
     const alpha = Math.atan((radius / (this.h / 2)) * tanHalf);
     this.baseDist = 1 / Math.sin(alpha);
 
-    [this.markerMat, this.starMat, this.orbitDots.material as ShaderMaterial].forEach(
+    [this.markerMat, this.moonMarkerMat, this.starMat, this.orbitDots.material as ShaderMaterial].forEach(
       (m) => (m.uniforms.uPixelRatio.value = pr),
     );
     this.cloudMat.uniforms.uAspect.value = this.w / this.h;
@@ -420,15 +494,60 @@ export class Globe {
     const orbitAlt = this.orbitDistance() - 1;
     const nearAlt = 0.012;
     const alt = orbitAlt * Math.pow(nearAlt / orbitAlt, clamp(v.descend, 0, 1));
-    latLngToVec3(v.lat, v.lng, 1 + alt, this.camera.position);
+    // Frame whichever body the view is on (blending while flying between them).
+    const f = clamp(v.body, 0, 1);
+    this.center.set(0, 0, 0).lerp(this.moonFrozen.pos, f);
+    this.bodyR = lerp(1, this.moonFrozen.scale, f);
+    latLngToVec3(v.lat, v.lng, this.bodyR * (1 + alt), this.camera.position).add(this.center);
     this.camera.up.set(0, 1, 0);
-    this.camera.lookAt(0, 0, 0);
+    this.camera.lookAt(this.center);
     this.camera.fov = v.fov;
     const offset = (this.h / 2 - this.centerY * this.h) * v.layout;
     this.camera.setViewOffset(this.w, this.h, 0, offset, this.w, this.h);
     this.camera.updateProjectionMatrix();
-    this.orbit.position.set(0, 0, 0);
+    this.camera.updateMatrixWorld();
+    this.orbit.position.copy(this.center);
+    this.orbit.scale.setScalar(this.bodyR);
     this.orbit.quaternion.copy(this.camera.quaternion);
+    this.placeMoon();
+  }
+
+  /**
+   * While on the Earth the small Moon is pinned to the same spot of the screen
+   * (up and to the right of the globe, behind it) whatever the rotation or zoom.
+   */
+  private computeMoonFollow() {
+    const wide = this.w >= 900;
+    const s = wide ? 1.4 : 1.24; // distance from the globe centre, in globe radii (on screen)
+    const ang = (wide ? 36 : 33) * DEG;
+    const k = wide ? 0.12 : 0.13; // Moon radius relative to the globe's
+    const D0 = this.baseDist;
+    const tanA = 1 / Math.sqrt(D0 * D0 - 1);
+    const D = this.camera.position.length();
+    const Dm = Math.max(D, D0) + 3;
+    const local = this.tmp.set(s * Math.cos(ang) * Dm * tanA, s * Math.sin(ang) * Dm * tanA, -Dm);
+    this.moonFollow.pos.copy(local).applyMatrix4(this.camera.matrixWorld);
+    this.moonFollow.quat.copy(this.camera.quaternion);
+    this.moonFollow.scale = k * Dm * tanA;
+  }
+
+  private placeMoon() {
+    this.computeMoonFollow();
+    const t = clamp(this.moonLock, 0, 1);
+    const g = this.moonGroup;
+    g.position.copy(this.moonFollow.pos).lerp(this.moonFrozen.pos, t);
+    g.quaternion.copy(this.moonFollow.quat).slerp(this.moonFrozen.quat, t);
+    g.scale.setScalar(lerp(this.moonFollow.scale, this.moonFrozen.scale, t));
+    g.updateMatrixWorld();
+  }
+
+  /** Fix the Moon where it currently is, ready for the camera to fly to it. */
+  freezeMoon() {
+    this.updateCamera();
+    this.moonFrozen.pos.copy(this.moonGroup.position);
+    this.moonFrozen.quat.copy(this.moonGroup.quaternion);
+    this.moonFrozen.scale = this.moonGroup.scale.x;
+    this.moonLock = 1;
   }
 
   // ------------------------------------------------------------------ loop
@@ -480,12 +599,20 @@ export class Globe {
     this.earthMat.uniforms.uIntro.value = 0.15 + 0.85 * intro;
     this.atmosMat.uniforms.uStrength.value = intro * this.view.atmosphere;
     const fadeOrbit = intro * (1 - clamp(this.view.descend * 3, 0, 1));
+    const f = clamp(this.view.body, 0, 1);
+    // The small Moon fades out when diving to an Earth location; it is the subject when f = 1.
+    this.moonMat.uniforms.uFade.value = intro * Math.max(f, 1 - clamp(this.view.descend * 4, 0, 1));
+    this.moonMat.uniforms.uHover.value = this.hovered === MOON_HOVER ? 1 : 0;
+    this.moonMarkerMat.uniforms.uTime.value = t;
+    this.moonMarkerMat.uniforms.uSelected.value = this.selected;
+    this.moonMarkerMat.uniforms.uHover.value = this.hovered;
+    this.moonMarkerMat.uniforms.uVisible.value = fadeOrbit * clamp((f - 0.6) / 0.4, 0, 1);
     for (const m of this.lineMats) m.uniforms.uOpacity.value = (m as any).baseOpacity * intro * (1 - this.view.descend * 0.6);
     this.lineMats[this.lineMats.length - 1].uniforms.uOpacity.value = 0.5 * fadeOrbit;
     this.markerMat.uniforms.uTime.value = t;
     this.markerMat.uniforms.uSelected.value = this.selected;
     this.markerMat.uniforms.uHover.value = this.hovered;
-    this.markerMat.uniforms.uVisible.value = fadeOrbit;
+    this.markerMat.uniforms.uVisible.value = fadeOrbit * clamp(1 - f / 0.4, 0, 1);
     this.starMat.uniforms.uTime.value = t;
 
     // Orbiting dots on the decorative ring
@@ -509,18 +636,43 @@ export class Globe {
     this.projectMarkers();
   }
 
+  /** World position of marker i (Moon markers move with the Moon). */
+  worldPos(i: number, out = new Vector3()) {
+    out.copy(this.markerPos[i]);
+    if (this.isMoon(i)) this.moonGroup.localToWorld(out);
+    return out;
+  }
+
   private projectMarkers() {
-    const camDir = this.tmp;
+    const camDir = new Vector3();
+    const p = new Vector3();
+    const n = new Vector3();
     for (let i = 0; i < this.markerPos.length; i++) {
-      const p = this.markerPos[i];
+      this.worldPos(i, p);
+      n.copy(p);
+      if (this.isMoon(i)) n.sub(this.moonGroup.position);
+      n.normalize();
       camDir.copy(this.camera.position).sub(p).normalize();
-      const facing = camDir.dot(p) / p.length();
       const s = p.clone().project(this.camera);
       this.screen[i].x = (s.x * 0.5 + 0.5) * this.w;
       this.screen[i].y = (-s.y * 0.5 + 0.5) * this.h;
-      this.screen[i].facing = facing;
+      this.screen[i].facing = camDir.dot(n);
     }
+    // The Moon's own outline on screen (for clicking it).
+    const c = this.moonGroup.position.clone().project(this.camera);
+    const edge = this.moonGroup.position
+      .clone()
+      .add(new Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion).multiplyScalar(this.moonGroup.scale.x))
+      .project(this.camera);
+    this.moonScreen.x = (c.x * 0.5 + 0.5) * this.w;
+    this.moonScreen.y = (-c.y * 0.5 + 0.5) * this.h;
+    this.moonScreen.r = Math.abs(edge.x - c.x) * 0.5 * this.w;
     this.onFrame?.(this.screen);
+  }
+
+  /** Screen-space circle of the small Moon (for UI hints). */
+  moonOnScreen() {
+    return this.moonScreen;
   }
 
   /** Called after every rendered frame with marker screen positions. */
@@ -535,10 +687,46 @@ export class Globe {
   private flying = false;
 
   /** Rotate so that a location sits in the middle of the globe. Returns the target view. */
-  targetFor(i: number) {
-    const p = this.points[i];
+  targetFor(i: number, zoom = this.view.zoom) {
+    const p = this.pointLatLng(i);
     // Aim slightly south of the point so the marker sits in the upper-middle of the disc, like the layout.
-    return { lat: clamp(p.lat - 8, -70, 70), lng: this.view.lng + angleDelta(this.view.lng, p.lng) };
+    // The offset shrinks when zoomed in, so close-up markers stay near the middle.
+    const off = 8 * clamp(zoom, 0, 1) ** 2;
+    return { lat: clamp(p.lat - off, -70, 70), lng: this.view.lng + angleDelta(this.view.lng, p.lng) };
+  }
+
+  /** Direction of marker i from the centre of its body, as world lat/lng (what the camera uses). */
+  pointLatLng(i: number) {
+    const p = this.points[i];
+    if (!this.isMoon(i)) return { lat: p.lat, lng: p.lng };
+    const d = latLngToVec3(p.lat, p.lng, 1).applyQuaternion(this.moonFrozen.quat);
+    return { lat: Math.asin(clamp(d.y, -1, 1)) / DEG, lng: Math.atan2(-d.z, d.x) / DEG };
+  }
+
+  /**
+   * Zoom level at which marker i is at least `px` pixels from its nearest neighbour
+   * on the same body (1 when it is already well separated).
+   */
+  zoomToSeparate(i: number, px = 26) {
+    const mine = this.isMoon(i);
+    const a = latLngToVec3(this.points[i].lat, this.points[i].lng, 1);
+    let nearest = Infinity;
+    this.points.forEach((q, j) => {
+      if (j === i || this.isMoon(j) !== mine) return;
+      nearest = Math.min(nearest, a.angleTo(latLngToVec3(q.lat, q.lng, 1)));
+    });
+    if (!isFinite(nearest)) return 1;
+    // Already far enough apart at the normal zoom? Then don't zoom at all.
+    if (this.zoomForGap(nearest, 10) >= 1) return 1;
+    return this.zoomForGap(nearest, px);
+  }
+
+  /** Zoom at which an angular gap (radians) on the surface spans about `px` pixels. */
+  zoomForGap(gapRad: number, px: number) {
+    const D0 = this.baseDist;
+    const focal = this.radiusPx * Math.sqrt(D0 * D0 - 1);
+    const z = (1 + (focal * gapRad) / px) / D0;
+    return clamp(Math.min(1, z), ZOOM_MIN, 1);
   }
 
   markIdle() {
@@ -565,7 +753,7 @@ export class Globe {
   }
 
   zoomBy(factor: number) {
-    this.view.zoom = clamp(this.view.zoom * factor, 0.62, 1.55);
+    this.view.zoom = clamp(this.view.zoom * factor, ZOOM_MIN, ZOOM_MAX);
     this.markIdle();
   }
 
@@ -578,21 +766,39 @@ export class Globe {
   private zoomStart = 1;
   private lastMove = { x: 0, y: 0, t: 0 };
 
+  private pickable(i: number) {
+    return this.isMoon(i) === this.onMoon && this.screen[i].facing >= 0.15;
+  }
+
+  /** Markers within the tap radius of (x, y), nearest first. */
+  private near(x: number, y: number, r = 22) {
+    return this.screen
+      .map((s, i) => ({ i, d: (s.x - x) ** 2 + (s.y - y) ** 2 }))
+      .filter(({ i, d }) => d < r * r && this.pickable(i))
+      .sort((a, b) => a.d - b.d)
+      .map(({ i }) => i);
+  }
+
   private pick(x: number, y: number): number {
-    let best = -1;
-    let bestD = 22 * 22;
-    this.screen.forEach((s, i) => {
-      if (s.facing < 0.15) return;
-      const d = (s.x - x) ** 2 + (s.y - y) ** 2;
-      if (d < bestD) {
-        bestD = d;
-        best = i;
-      }
-    });
+    let best = this.near(x, y)[0] ?? -1;
     // The selected location has arrows around it; treat that whole area as its tap target.
     const sel = this.screen[this.selected];
-    if (best < 0 && sel && sel.facing >= 0.15 && (sel.x - x) ** 2 + (sel.y - y) ** 2 < 46 * 46) best = this.selected;
+    if (best < 0 && sel && this.pickable(this.selected) && (sel.x - x) ** 2 + (sel.y - y) ** 2 < 46 * 46) best = this.selected;
+    // The small Moon, while looking at the Earth.
+    if (best < 0 && !this.onMoon && this.view.body < 0.05) {
+      const m = this.moonScreen;
+      if ((m.x - x) ** 2 + (m.y - y) ** 2 < (m.r + 12) ** 2) best = MOON_HOVER;
+    }
     return best;
+  }
+
+  /** Markers that overlap at (x, y) closely enough that a tap can't tell them apart. */
+  private cluster(x: number, y: number): number[] {
+    const hits = this.near(x, y, 24);
+    if (hits.length < 2) return [];
+    const a = this.screen[hits[0]];
+    const close = hits.filter((i) => Math.hypot(this.screen[i].x - a.x, this.screen[i].y - a.y) < 22);
+    return close.length > 1 && !close.includes(this.selected) ? close : [];
   }
 
   private local(e: PointerEvent | WheelEvent) {
@@ -641,7 +847,7 @@ export class Globe {
       if (this.pointers.size === 2) {
         const [a, b] = [...this.pointers.values()];
         const d = Math.hypot(a.x - b.x, a.y - b.y);
-        if (this.pinchStart > 0) this.view.zoom = clamp(this.zoomStart * (this.pinchStart / d), 0.62, 1.55);
+        if (this.pinchStart > 0) this.view.zoom = clamp(this.zoomStart * (this.pinchStart / d), ZOOM_MIN, ZOOM_MAX);
         this.down.moved = 999;
         return;
       }
@@ -673,8 +879,11 @@ export class Globe {
         if (performance.now() - this.lastMove.t > 80) this.vel.lat = this.vel.lng = 0;
         const quick = performance.now() - this.down.t < 500;
         if (this.down.moved < 8 && quick && this.interactive && e.type === 'pointerup') {
+          const group = this.cluster(x, y);
           const i = this.pick(x, y);
-          if (i >= 0) {
+          if (group.length) this.opts.onCluster?.(group);
+          else if (i === MOON_HOVER) this.opts.onMoon?.();
+          else if (i >= 0) {
             if (i === this.selected) this.opts.onActivate?.(i);
             else this.opts.onPick?.(i);
           }

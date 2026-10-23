@@ -1,0 +1,20 @@
+name: Curaçao
+country: Curaçao
+coordinates:
+  lat: 12.1696
+  lng: -68.99
+description: "A sea turtle in the clear water off Curaçao."
+photos:
+  - file: ./curacao-01.jpg
+    taken: 2023-05-02T19:27:51
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 83mm
+      aperture: f/5.6
+      shutter: 1/400
+      iso: 100
+    title: Sea turtle
+    alt: A sea turtle swimming in clear turquoise water
+cover: ./curacao-01.jpg
+coverPosition: 50% 50%

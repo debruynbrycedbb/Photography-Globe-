@@ -131,7 +131,8 @@ export const markerVertex = /* glsl */ `
     vActive = max(sel, hov * 0.7);
     vIndex = aIndex;
     float size = uSize * (1.0 + sel * 0.55 + hov * 0.35);
-    gl_PointSize = size * uPixelRatio * (6.0 / -mv.z) * uVisible;
+    // Grows a little as the camera gets closer, but never balloons when zoomed right in.
+    gl_PointSize = size * uPixelRatio * clamp(6.0 / -mv.z, 0.6, 1.5) * uVisible;
     gl_Position = projectionMatrix * mv;
   }
 `;
@@ -200,6 +201,49 @@ export const ringFragment = /* glsl */ `
     // Brighter on one side, fading out on the other — like a lit orbit.
     float a = uOpacity * (0.25 + 0.75 * pow(0.5 + 0.5 * cos((vT - 0.15) * 6.2831853), 1.5));
     gl_FragColor = vec4(uColor * a, a);
+  }
+`;
+
+// The Moon: procedural albedo (r) + height (g), lit from a fixed direction in view space
+// so it always reads as a softly lit gibbous moon, with the same teal rim as the Earth.
+export const moonVertex = /* glsl */ `
+  varying vec2 vUv;
+  varying vec3 vNormalV;
+  varying vec3 vPosV;
+  void main() {
+    vUv = uv;
+    vNormalV = normalize(normalMatrix * normal);
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    vPosV = mv.xyz;
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+
+export const moonFragment = /* glsl */ `
+  uniform sampler2D uMap;
+  uniform vec2 uTexel;
+  uniform vec3 uAccent;
+  uniform float uFade;
+  uniform float uHover;
+  varying vec2 vUv;
+  varying vec3 vNormalV;
+  varying vec3 vPosV;
+  void main() {
+    vec3 N = normalize(vNormalV);
+    vec3 V = normalize(-vPosV);
+    vec2 t = texture2D(uMap, vUv).rg;
+    float hE = texture2D(uMap, vUv + vec2(uTexel.x, 0.0)).g;
+    float hW = texture2D(uMap, vUv - vec2(uTexel.x, 0.0)).g;
+    float hN = texture2D(uMap, vUv - vec2(0.0, uTexel.y)).g;
+    float hS = texture2D(uMap, vUv + vec2(0.0, uTexel.y)).g;
+    float hill = clamp(0.5 + ((hW - hE) + (hN - hS)) * 6.0, 0.0, 1.0);
+    vec3 L = normalize(vec3(-0.55, 0.45, 0.7));
+    float diff = smoothstep(-0.12, 0.6, dot(N, L));
+    vec3 base = mix(vec3(0.30, 0.33, 0.33), vec3(0.80, 0.83, 0.82), t.r);
+    vec3 col = base * mix(0.62, 1.32, hill) * (0.05 + 0.95 * diff);
+    float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
+    col += uAccent * fres * (0.30 + 0.35 * uHover);
+    gl_FragColor = vec4(col * uFade, uFade);
   }
 `;
 

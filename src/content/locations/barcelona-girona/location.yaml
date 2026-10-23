@@ -28,6 +28,17 @@ photos:
       iso: 250
     title: Park Güell
     alt: Visitors walking through the stone colonnade of Park Güell
+  - file: ./barcelona-girona-07.jpg
+    taken: 2025-10-12T18:37:03
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 15mm
+      aperture: f/3.5
+      shutter: 1/80
+      iso: 640
+    title: Park Güell ceiling
+    alt: A circular mosaic medallion of broken tiles set into a white ceiling
   - file: ./barcelona-girona-03.jpg
     taken: 2025-10-12T20:03:45
     camera: Canon EOS M50
@@ -72,5 +83,16 @@ photos:
       iso: 100
     title: Houses on the Onyar, Girona
     alt: Colourful houses lining the River Onyar in Girona under a cloudy sky
+  - file: ./barcelona-girona-08.jpg
+    taken: 2026-04-23T20:22:21
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 15mm
+      aperture: f/5
+      shutter: 1/125
+      iso: 100
+    title: ""
+    alt: A colourful tiled ceiling with geometric patterns around a central rosette
 cover: ./barcelona-girona-01.jpg
 coverPosition: 50% 55%

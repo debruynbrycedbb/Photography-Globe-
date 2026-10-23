@@ -1,0 +1,42 @@
+name: Moon & Stars
+country: Night sky
+coordinates:
+  lat: 12
+  lng: -90
+description: "The Milky Way and the Moon, photographed from the ground."
+photos:
+  - file: ./moon-and-stars-01.jpg
+    taken: 2018-07-12T20:53:25
+    camera: GoPro HERO6 Black
+    settings:
+      focal: 3mm
+      aperture: f/2.8
+      shutter: 20s
+      iso: 760
+    title: Milky Way
+    alt: The Milky Way across a dark night sky full of stars
+  - file: ./moon-and-stars-02.jpg
+    taken: 2021-02-24T19:22:22
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 200mm
+      aperture: f/11
+      shutter: 1/160
+      iso: 125
+    title: Full moon
+    alt: A full moon in a deep blue night sky
+  - file: ./moon-and-stars-03.jpg
+    taken: 2022-07-20T03:29:38
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 200mm
+      aperture: f/16
+      shutter: 1/2
+      iso: 100
+    title: Half moon
+    alt: A half-lit moon against a black sky
+cover: ./moon-and-stars-01.jpg
+body: moon
+coverPosition: 50% 50%

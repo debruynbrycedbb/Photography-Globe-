@@ -1,0 +1,31 @@
+name: Dominican Republic
+country: Dominican Republic
+coordinates:
+  lat: 18.7357
+  lng: -70.1627
+description: "Sunset over the sea and a starfish on the sand in the Dominican Republic."
+photos:
+  - file: ./dominican-republic-01.jpg
+    taken: 2021-12-28T16:24:30
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 55mm
+      aperture: f/7.1
+      shutter: 1/500
+      iso: 100
+    title: Starfish
+    alt: An orange starfish on wet sand
+  - file: ./dominican-republic-02.jpg
+    taken: 2023-05-13T02:10:28
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 200mm
+      aperture: f/7.1
+      shutter: 1/640
+      iso: 200
+    title: ""
+    alt: A lone figure standing in the sea at sunset under orange clouds
+cover: ./dominican-republic-02.jpg
+coverPosition: 50% 40%

@@ -1,0 +1,34 @@
+name: French Alps
+country: France
+coordinates:
+  lat: 45.6
+  lng: 6.6
+description: "Snow-covered peaks and late light on the ridgelines of the French Alps."
+photos:
+  - file: ./french-alps-01.jpg
+    taken: 2020-12-26T17:41:38
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 114mm
+      aperture: f/5.6
+      shutter: 1/500
+      iso: 800
+    title: ""
+    alt: Golden evening light on a rocky ridge above pine forest
+  - file: ./french-alps-02.jpg
+    taken: 2025-02-20T14:05:13
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 63mm
+      aperture: f/8
+      shutter: 1/640
+      iso: 100
+    title: ""
+    alt: Snow-covered mountains with cloud drifting across the peaks
+  - file: ./french-alps-03.jpg
+    title: ""
+    alt: Jagged snowy peaks under a clear sky
+cover: ./french-alps-02.jpg
+coverPosition: 50% 40%

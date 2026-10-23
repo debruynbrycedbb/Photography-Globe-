@@ -555,6 +555,54 @@ body:has(.app.is-gallery) .site-header::before {
   opacity: 0.55;
 }
 
+/* Shown while the camera is at the Moon */
+.back-earth {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--header-h) / 2);
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px 9px 13px;
+  border: 1px solid var(--accent-soft);
+  border-radius: 999px;
+  background: rgba(4, 12, 12, 0.6);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+  translate: -50% -50%;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.5s var(--ease-out),
+    visibility 0s linear 0.5s,
+    border-color 0.3s;
+}
+.back-earth svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.4s var(--ease-out);
+}
+.back-earth:hover {
+  border-color: var(--accent);
+}
+.back-earth:hover svg {
+  transform: translateX(-3px);
+}
+.app.on-moon:not(.is-travelling):not(.is-gallery) .back-earth {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.6s var(--ease-out) 0.6s,
+    visibility 0s,
+    border-color 0.3s;
+}
+
 /* Selected location panel */
 .panel {
   position: absolute;
@@ -1293,6 +1341,14 @@ body:has(.app.is-gallery) .site-header::before {
   }
   .menu-toggle {
     display: inline-flex;
+  }
+  .back-earth {
+    padding: 7px 13px 7px 10px;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+  }
+  .back-earth-long {
+    display: none;
   }
   .site-nav {
     position: fixed;

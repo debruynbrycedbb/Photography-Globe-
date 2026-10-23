@@ -1,0 +1,54 @@
+name: Arnhem
+country: Netherlands
+region: Gelderland
+coordinates:
+  lat: 51.9851
+  lng: 5.8987
+description: "Snowy streets and quiet waterside corners in Arnhem, in the east of the Netherlands."
+photos:
+  - file: ./arnhem-01.jpg
+    taken: 2026-01-03T13:06:35
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 15mm
+      aperture: f/4.5
+      shutter: 1/100
+      iso: 100
+    title: Snow in Arnhem
+    alt: A snowy street with bare trees and a brick archway
+  - file: ./arnhem-02.jpg
+    taken: 2026-01-03T13:28:26
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 15mm
+      aperture: f/5
+      shutter: 1/160
+      iso: 100
+    title: ""
+    alt: Snow-covered rooftops and gardens
+  - file: ./arnhem-03.jpg
+    taken: 2026-02-26T20:53:06
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 135mm
+      aperture: f/5.6
+      shutter: 1/640
+      iso: 320
+    title: ""
+    alt: Modern houses with dark roofs reflected in still water beside reeds
+  - file: ./arnhem-04.jpg
+    taken: 2026-04-01T22:14:12
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 119mm
+      aperture: f/5.6
+      shutter: 1/500
+      iso: 640
+    title: ""
+    alt: Warm light rippling across dark water in abstract reflections
+cover: ./arnhem-01.jpg
+coverPosition: 50% 50%

@@ -1,0 +1,106 @@
+name: Utrecht
+country: Netherlands
+coordinates:
+  lat: 52.0907
+  lng: 5.1214
+description: "Utrecht's Dom Tower, tree-lined roads, ducks on the water and long evening skies."
+photos:
+  - file: ./utrecht-01.jpg
+    taken: 2021-02-24T18:21:41
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 80mm
+      aperture: f/5
+      shutter: 1/500
+      iso: 400
+    title: ""
+    alt: A straight road through an avenue of bare trees
+  - file: ./utrecht-02.jpg
+    taken: 2021-05-07T16:01:03
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 55mm
+      aperture: f/4.5
+      shutter: 1/250
+      iso: 100
+    title: Mallard
+    alt: A mallard resting on rocks at the foot of a tree
+  - file: ./utrecht-03.jpg
+    taken: 2022-04-15T21:29:10
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 159mm
+      aperture: f/5.6
+      shutter: 1/500
+      iso: 320
+    title: ""
+    alt: A chimney silhouetted against an orange sunset
+  - file: ./utrecht-04.jpg
+    taken: 2022-06-19T22:52:35
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 75mm
+      aperture: f/5
+      shutter: 1/320
+      iso: 800
+    title: ""
+    alt: Soft pink and orange sunset clouds
+  - file: ./utrecht-05.jpg
+    taken: 2023-06-25T18:06:21
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 173mm
+      aperture: f/6.3
+      shutter: 1/640
+      iso: 2000
+    title: ""
+    alt: A crested duck swimming among green reflections
+  - file: ./utrecht-06.jpg
+    taken: 2023-07-15T23:01:13
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 55mm
+      aperture: f/4.5
+      shutter: 1/250
+      iso: 200
+    title: ""
+    alt: Pink clouds reflected in a window beside a brick building
+  - file: ./utrecht-07.jpg
+    taken: 2025-12-13T20:21:59
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 94mm
+      aperture: f/5
+      shutter: 1/320
+      iso: 3200
+    title: ""
+    alt: A dark high-rise beside a pink and orange evening sky
+  - file: ./utrecht-08.jpg
+    taken: 2026-01-06T17:01:18
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 42mm
+      aperture: f/7.1
+      shutter: 1/250
+      iso: 100
+    title: Dom Tower
+    alt: The Gothic Dom Tower with snow on the railings below
+  - file: ./utrecht-09.jpg
+    title: ""
+    alt: A red Coca-Cola sign on a corner building, seen from below
+  - file: ./utrecht-10.jpg
+    title: ""
+    alt: Sky reflected in a puddle on herringbone brick paving
+  - file: ./utrecht-11.jpg
+    title: ""
+    alt: A brick townhouse with striped awnings and climbing plants
+cover: ./utrecht-08.jpg
+coverPosition: 50% 35%

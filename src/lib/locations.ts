@@ -100,7 +100,7 @@ export function settingsLabel(p: Photo): string {
 }
 
 export function countriesCount(locs: Location[]): number {
-  return new Set(locs.map((l) => l.data.country.trim().toLowerCase())).size;
+  return new Set(locs.filter((l) => l.data.body !== 'moon').map((l) => l.data.country.trim().toLowerCase())).size;
 }
 
 // ---------- Responsive image sources ----------
@@ -178,6 +178,7 @@ export async function clientSummary(loc: Location) {
     href: locationHref(loc),
     thumb: await sized(loc.data.cover, 640),
     coverPosition: loc.data.coverPosition,
+    body: loc.data.body,
     palette: pal,
   };
 }

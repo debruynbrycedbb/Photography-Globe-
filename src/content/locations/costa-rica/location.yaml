@@ -1,0 +1,42 @@
+name: Costa Rica
+country: Costa Rica
+coordinates:
+  lat: 10.1978
+  lng: -84.2306
+description: "Rainforest coastline and the crater lake of Poás Volcano in Costa Rica."
+photos:
+  - file: ./costa-rica-01.jpg
+    taken: 2022-08-16T17:39:44
+    camera: Canon EOS M50
+    lens: Canon EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 45mm
+      aperture: f/6.3
+      shutter: 1/200
+      iso: 100
+    title: ""
+    alt: Waves breaking against a rocky shore below dense tropical forest
+  - file: ./costa-rica-02.jpg
+    taken: 2022-08-19T19:00:38
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 15mm
+      aperture: f/5.6
+      shutter: 1/1250
+      iso: 100
+    title: Poás Volcano
+    alt: The pale crater lake of Poás Volcano under drifting cloud
+  - file: ./costa-rica-03.jpg
+    taken: 2022-08-19T19:49:19
+    camera: Canon EOS M50
+    lens: Canon EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 187mm
+      aperture: f/6.3
+      shutter: 1/640
+      iso: 100
+    title: ""
+    alt: A small bird in flight against a turquoise sky
+cover: ./costa-rica-02.jpg
+coverPosition: 50% 55%

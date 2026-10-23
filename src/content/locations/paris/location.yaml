@@ -1,0 +1,75 @@
+name: Paris
+country: France
+coordinates:
+  lat: 48.8566
+  lng: 2.3522
+description: "Haussmann façades, the Eiffel Tower, the Arc de Triomphe under wraps in 2021 and the Pont de Bir-Hakeim."
+photos:
+  - file: ./paris-01.jpg
+    taken: 2020-12-15T16:14:00
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 55mm
+      aperture: f/4.5
+      shutter: 1/250
+      iso: 100
+    title: ""
+    alt: Haussmann apartment buildings and a clock tower at the end of a Paris street
+  - file: ./paris-02.jpg
+    taken: 2021-01-16T13:54:25
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 108mm
+      aperture: f/5.6
+      shutter: 1/500
+      iso: 320
+    title: Snow day
+    alt: A curly-haired dog in a pink coat standing in the snow
+  - file: ./paris-03.jpg
+    taken: 2021-06-01T08:49:06
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 15mm
+      aperture: f/9
+      shutter: 1/400
+      iso: 100
+    title: Eiffel Tower
+    alt: The Eiffel Tower above a stone surface and its reflection
+  - file: ./paris-04.jpg
+    taken: 2021-09-19T16:00:48
+    camera: Canon EOS M50
+    lens: Canon EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 156mm
+      aperture: f/6.3
+      shutter: 1/640
+      iso: 100
+    title: L'Arc de Triomphe, Wrapped
+    alt: Crowds in front of the Arc de Triomphe wrapped in silver-blue fabric
+  - file: ./paris-05.jpg
+    taken: 2022-06-30T18:08:07
+    camera: Canon EOS M50
+    lens: Canon EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 122mm
+      aperture: f/5.6
+      shutter: 1/400
+      iso: 200
+    title: Pont de Bir-Hakeim
+    alt: A metro train crossing the Pont de Bir-Hakeim in front of grand apartment buildings
+  - file: ./paris-06.jpg
+    taken: 2022-06-30T20:09:55
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 55mm
+      aperture: f/5.6
+      shutter: 1/400
+      iso: 100
+    title: ""
+    alt: A long tree-lined avenue leading towards the city
+cover: ./paris-03.jpg
+coverPosition: 50% 38%

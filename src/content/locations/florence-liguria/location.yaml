@@ -1,11 +1,33 @@
-name: Florence & Liguria
+name: Tuscany & Liguria
 country: Italy
 region: Tuscany and Liguria
 coordinates:
   lat: 43.7696
   lng: 11.2558
-description: "Brunelleschi's dome and the rooftops of Florence, then west to the colourful harbour town of Camogli on the Ligurian coast."
+description: "Florence, Pisa and the Tuscan hills, then west to the colourful harbour town of Camogli on the Ligurian coast."
 photos:
+  - file: ./florence-liguria-11.jpg
+    taken: 2025-11-04T16:12:44
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 15mm
+      aperture: f/8
+      shutter: 1/400
+      iso: 100
+    title: Leaning Tower of Pisa
+    alt: The Leaning Tower of Pisa against a deep blue sky with visitors below
+  - file: ./florence-liguria-12.jpg
+    taken: 2025-11-11T17:23:45
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 55mm
+      aperture: f/7.1
+      shutter: 1/500
+      iso: 100
+    title: Florence Cathedral
+    alt: A marble statue of the Madonna and Child in a carved niche on the cathedral facade
   - file: ./florence-liguria-01.jpg
     taken: 2026-04-06T15:34:27
     camera: Canon EOS M50
@@ -116,5 +138,8 @@ photos:
       iso: 100
     title: Florence through wisteria
     alt: The domes and towers of Florence framed by hanging wisteria
+  - file: ./florence-liguria-13.jpg
+    title: ""
+    alt: Terracotta rooftops of a Tuscan hill town framed by pine branches
 cover: ./florence-liguria-03.jpg
 coverPosition: 50% 52%

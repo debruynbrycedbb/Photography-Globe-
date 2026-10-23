@@ -1,0 +1,64 @@
+name: Victoria Falls
+country: Zimbabwe
+coordinates:
+  lat: -17.9243
+  lng: 25.8572
+description: "Rainbows in the spray of Victoria Falls on the Zambezi, and sunset over the palms."
+photos:
+  - file: ./victoria-falls-01.jpg
+    taken: 2024-01-03T18:32:59
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 39mm
+      aperture: f/11
+      shutter: 1/800
+      iso: 640
+    title: Victoria Falls
+    alt: A rainbow arching over the gorge at Victoria Falls
+  - file: ./victoria-falls-02.jpg
+    taken: 2024-01-03T18:52:37
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 45mm
+      aperture: f/6.3
+      shutter: 1/200
+      iso: 125
+    title: Victoria Falls
+    alt: A waterfall plunging into the gorge beside green forest
+  - file: ./victoria-falls-03.jpg
+    taken: 2024-01-03T19:14:40
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 15mm
+      aperture: f/8
+      shutter: 1/400
+      iso: 100
+    title: ""
+    alt: A rainbow in the spray above the edge of the gorge
+  - file: ./victoria-falls-04.jpg
+    taken: 2024-01-03T19:17:12
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 15mm
+      aperture: f/8
+      shutter: 1/320
+      iso: 100
+    title: Victoria Falls
+    alt: Spray rising from the falls under a blue sky
+  - file: ./victoria-falls-05.jpg
+    taken: 2024-01-04T20:12:25
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 200mm
+      aperture: f/6.3
+      shutter: 1/640
+      iso: 200
+    title: Sunset
+    alt: Palm trees silhouetted against an orange sunset
+cover: ./victoria-falls-01.jpg
+coverPosition: 50% 45%
