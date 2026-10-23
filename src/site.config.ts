@@ -11,9 +11,12 @@ export const site = {
   },
   /** Location shown in the side panel when the homepage first loads (folder name). */
   featuredLocation: 'florence-liguria',
-  /** Contact details shown on the Contact page. Left empty until you decide what to publish. */
+  /** Contact details shown on the Contact page. Leave a field empty ('') to hide it. */
   contact: {
-    email: '',
+    email: 'debruynbryce2001@gmail.com',
+    phone: '+34 671 077 827',
+    youtube: 'https://www.youtube.com/@bdbvideos2662',
+    linkedin: 'https://www.linkedin.com/in/bryce-de-bruyn-876881226',
     instagram: '',
   },
 };

@@ -1,20 +1,43 @@
 ---
 import Base from '../layouts/Base.astro';
+import { responsive, withBase } from '../lib/locations';
+import portrait from '../assets/about/bryce.jpg';
+
+const photo = await responsive(portrait, [480, 800, 1125]);
 ---
 
-<Base title="About" active="about" bodyClass="is-gallery-page">
-  <main id="main" class="page">
-    <header class="page-head">
+<Base title="About" description="Bryce de Bruyn, photographer and videographer." active="about" bodyClass="is-gallery-page">
+  <main id="main" class="page about">
+    <figure class="about-photo">
+      <img
+        src={photo.src}
+        srcset={photo.srcset}
+        sizes="(max-width: 899px) 100vw, 40vw"
+        width={photo.width}
+        height={photo.height}
+        alt="Bryce de Bruyn in sunglasses and a black jacket, standing in the snow with mountains behind"
+        fetchpriority="high"
+        decoding="async"
+      />
+    </figure>
+    <div class="about-text">
       <p class="tag">About</p>
-      <h1 class="page-title">The photographer</h1>
-    </header>
-    <div class="prose">
-      <!-- PLACEHOLDER: replace this paragraph with your own introduction. -->
-      <p>
-        <strong>This page is waiting for your story.</strong> Replace this text in
-        <code>src/pages/about.astro</code> with a short introduction: who you are, how you got into
-        photography, and what you look for when you travel.
-      </p>
+      <h1 class="page-title">Bryce de Bruyn</h1>
+      <div class="prose about-prose">
+        <p>
+          I'm Bryce de Bruyn, a 24-year-old photographer and videographer. Photography has been a passion
+          of mine for the past six years, and I've spent even longer, over ten years, filming and editing
+          videos.
+        </p>
+        <p>
+          This website is my personal portfolio to showcase my favourite photos and highlight my growth
+          over the years. Thanks for stopping by, and enjoy exploring my photography.
+        </p>
+      </div>
+      <a class="cta about-cta" href={withBase('contact/')}>
+        <span>Get in touch</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg>
+      </a>
     </div>
   </main>
 </Base>

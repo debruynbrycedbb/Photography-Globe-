@@ -1,38 +1,42 @@
 ---
 import Base from '../layouts/Base.astro';
 import { site } from '../site.config';
-const { email, instagram } = site.contact;
-const hasAny = email || instagram;
+
+const { email, phone, youtube, linkedin, instagram } = site.contact;
+const pretty = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+const items = [
+  email && { label: 'Email', value: email, href: `mailto:${email}` },
+  phone && { label: 'Phone', value: phone, href: `tel:${phone.replace(/[^+\d]/g, '')}` },
+  youtube && { label: 'YouTube', value: pretty(youtube), href: youtube, external: true },
+  linkedin && { label: 'LinkedIn', value: pretty(linkedin), href: linkedin, external: true },
+  instagram && { label: 'Instagram', value: instagram, href: `https://instagram.com/${instagram.replace(/^@/, '')}`, external: true },
+].filter(Boolean) as { label: string; value: string; href: string; external?: boolean }[];
 ---
 
-<Base title="Contact" active="contact" bodyClass="is-gallery-page">
+<Base title="Contact" description="Contact details for Bryce de Bruyn." active="contact" bodyClass="is-gallery-page">
   <main id="main" class="page">
     <header class="page-head">
       <p class="tag">Contact</p>
       <h1 class="page-title">Get in touch</h1>
     </header>
-    <div class="prose">
-      {
-        hasAny ? (
-          <ul class="contact-list">
-            {email && (
-              <li>
-                Email: <a href={`mailto:${email}`}>{email}</a>
-              </li>
-            )}
-            {instagram && (
-              <li>
-                Instagram: <a href={`https://instagram.com/${instagram.replace(/^@/, '')}`}>{instagram}</a>
-              </li>
-            )}
-          </ul>
-        ) : (
-          <p>
-            <strong>No contact details have been added yet.</strong> Add an email address or Instagram
-            handle in <code>src/site.config.ts</code> and they will appear here.
-          </p>
-        )
-      }
-    </div>
+    {
+      items.length ? (
+        <dl class="contact-list">
+          {items.map((c) => (
+            <div class="contact-row">
+              <dt>{c.label}</dt>
+              <dd>
+                <a href={c.href} {...(c.external ? { target: '_blank', rel: 'noopener' } : {})}>
+                  {c.value}
+                  {c.external && <span class="visually-hidden"> (opens in a new tab)</span>}
+                </a>
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <p class="prose">No contact details have been added yet.</p>
+      )
+    }
   </main>
 </Base>
