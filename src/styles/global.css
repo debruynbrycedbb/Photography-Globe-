@@ -375,6 +375,50 @@ body:has(.app.is-gallery) .site-header::before {
   will-change: transform;
 }
 
+/* Arrows that pulse towards the selected location: "tap again to open". */
+.ring-cue {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform: rotate(var(--a));
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-out);
+}
+.ring-cue svg {
+  position: absolute;
+  left: -6px;
+  top: -8px;
+  width: 12px;
+  height: 16px;
+  color: var(--accent);
+  stroke-width: 1.8;
+  filter: drop-shadow(0 0 4px rgba(62, 240, 177, 0.6));
+  transform: translateY(-36px);
+  animation: ring-cue 1.6s var(--ease-in-out) infinite;
+}
+.globe-ring.is-cued .ring-cue {
+  opacity: 1;
+}
+@keyframes ring-cue {
+  0%,
+  100% {
+    transform: translateY(-40px);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateY(-31px);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ring-cue svg {
+    animation: none !important;
+    transform: translateY(-34px);
+  }
+}
+
 .globe-tip {
   position: absolute;
   left: 0;
@@ -1329,10 +1373,10 @@ body:has(.app.is-gallery) .site-header::before {
     bottom: calc(40px + (100vw - 2 * var(--gutter)) / 3.4 / 1.52 + 44px + 14px);
     width: auto;
     display: grid;
-    grid-template-columns: 104px 1fr;
-    gap: 16px;
+    grid-template-columns: 60px minmax(0, 1fr);
+    gap: 12px;
     align-items: center;
-    padding: 12px;
+    padding: 7px 8px 7px 7px;
     background: rgba(6, 14, 15, 0.72);
     border: 1px solid var(--line);
     backdrop-filter: blur(10px);
@@ -1343,23 +1387,53 @@ body:has(.app.is-gallery) .site-header::before {
     display: none;
   }
   .panel-media {
-    aspect-ratio: 1.4;
+    aspect-ratio: 1.36;
   }
   .panel-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 12px;
+    align-items: center;
     padding: 0;
   }
   .panel-name {
-    font-size: 13px;
-    gap: 10px;
+    grid-column: 1;
+    min-width: 0;
+    font-size: 12px;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .panel-name > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .panel-name .dot {
+    width: 7px;
+    height: 7px;
   }
   .panel-country {
-    margin-left: 19px;
-    font-size: 10px;
+    grid-column: 1;
+    margin: 3px 0 0 15px;
+    font-size: 9.5px;
   }
+  /* "View gallery" becomes a round arrow button; the text stays for screen readers. */
   .panel .cta {
-    margin-top: 10px;
-    margin-left: 19px;
-    font-size: 11px;
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    justify-content: center;
+    border: 1px solid var(--accent-soft);
+    border-radius: 50%;
+  }
+  .panel .cta span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   .strip {

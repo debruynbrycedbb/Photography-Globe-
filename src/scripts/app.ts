@@ -60,6 +60,8 @@ export function startApp() {
   const indexOf = (slug: string) => data.findIndex((l) => l.slug === slug);
   const panelCta = $<HTMLAnchorElement>('[data-panel-cta]');
   let selected = Math.max(0, indexOf(initialSlug || panelCta?.dataset.location || data[0].slug));
+  /** True while the selected location is centred and waiting for a second tap. */
+  let cued = false;
   let current = initialSlug ? indexOf(initialSlug) : -1;
 
   // ------------------------------------------------------------ globe
@@ -92,6 +94,8 @@ export function startApp() {
       const show = mode !== 'gallery' && !root.classList.contains('is-travelling') && s && s.facing > 0.12;
       ring.style.transform = `translate3d(${s?.x ?? -99}px, ${s?.y ?? -99}px, 0)`;
       ring.style.opacity = show ? String(Math.min(1, (s.facing - 0.12) * 4) * up) : '0';
+      // "Tap again" arrows: only once the globe has stopped turning towards the selection.
+      ring.classList.toggle('is-cued', !!show && cued && mode === 'globe');
       if (globe && globe.hovered >= 0) {
         const h = screen[globe.hovered];
         tip.style.transform = `translate3d(${h.x}px, ${h.y}px, 0)`;
@@ -116,9 +120,13 @@ export function startApp() {
             const t = globe!.targetFor(selected);
             if (reduced) {
               Object.assign(globe!.view, { lat: t.lat, lng: t.lng, intro: 1 });
+              cued = true;
             } else {
               Object.assign(globe!.view, { lat: t.lat + 6, lng: t.lng - 40, zoom: 1.22, intro: 0 });
-              gsap.to(globe!.view, { lat: t.lat, lng: t.lng, zoom: 1, intro: 1, duration: 2.6, ease: 'power3.out' });
+              gsap.to(globe!.view, {
+                lat: t.lat, lng: t.lng, zoom: 1, intro: 1, duration: 2.6, ease: 'power3.out',
+                onComplete: () => { cued = true; },
+              });
             }
             globe!.start();
           }
@@ -179,13 +187,17 @@ export function startApp() {
         const t = globe.targetFor(i);
         globe.halt();
         globe.setFlying(true);
+        cued = false;
         gsap.killTweensOf(globe.view, 'lat,lng');
         gsap.to(globe.view, {
           lat: t.lat,
           lng: t.lng,
           duration: reduced ? 0 : 1.3,
           ease: 'power3.inOut',
-          onComplete: () => globe?.setFlying(false),
+          onComplete: () => {
+            globe?.setFlying(false);
+            cued = true;
+          },
         });
       }
     }
@@ -395,6 +407,7 @@ export function startApp() {
       globe.interactive = true;
       globe.setFlying(false);
     }
+    cued = true;
     current = -1;
     mode = 'globe';
     busy = false;

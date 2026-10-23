@@ -36,7 +36,12 @@ const countries = countriesCount(locations);
     aria-label="Interactive globe. Drag or use the arrow keys to rotate, plus and minus to zoom, Enter to open the selected location. All locations are also listed below the globe."
   >
     <canvas class="globe-canvas" data-globe-canvas aria-hidden="true"></canvas>
-    <div class="globe-ring" data-globe-ring aria-hidden="true"></div>
+    <div class="globe-ring" data-globe-ring aria-hidden="true">
+      <span class="ring-cue" style="--a:45deg"><svg viewBox="-6 -8 12 16"><path d="M0-7V6M-4.5 1.5 0 6l4.5-4.5"></path></svg></span>
+      <span class="ring-cue" style="--a:135deg"><svg viewBox="-6 -8 12 16"><path d="M0-7V6M-4.5 1.5 0 6l4.5-4.5"></path></svg></span>
+      <span class="ring-cue" style="--a:225deg"><svg viewBox="-6 -8 12 16"><path d="M0-7V6M-4.5 1.5 0 6l4.5-4.5"></path></svg></span>
+      <span class="ring-cue" style="--a:315deg"><svg viewBox="-6 -8 12 16"><path d="M0-7V6M-4.5 1.5 0 6l4.5-4.5"></path></svg></span>
+    </div>
     <div class="globe-tip" data-globe-tip aria-hidden="true"></div>
     <p class="globe-fallback" data-globe-fallback hidden>
       Your browser can't show the 3D globe. Choose a location below, or

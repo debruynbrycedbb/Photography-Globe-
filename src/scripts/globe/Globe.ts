@@ -576,6 +576,9 @@ export class Globe {
         best = i;
       }
     });
+    // The selected location has arrows around it; treat that whole area as its tap target.
+    const sel = this.screen[this.selected];
+    if (best < 0 && sel && sel.facing >= 0.15 && (sel.x - x) ** 2 + (sel.y - y) ** 2 < 46 * 46) best = this.selected;
     return best;
   }
 
