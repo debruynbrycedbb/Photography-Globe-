@@ -1,5 +1,6 @@
 import {
   AdditiveBlending,
+  NormalBlending,
   BackSide,
   BufferAttribute,
   BufferGeometry,
@@ -124,6 +125,7 @@ export class Globe {
   private moonGroup = new Group();
   private moonMat!: ShaderMaterial;
   private moonMarkerMat!: ShaderMaterial;
+  private markerBackMat!: ShaderMaterial;
   private moonMarkerGeo = new BufferGeometry();
   private moonIdx: number[] = [];
   /** Where the Moon was frozen in space when the camera set off towards it. */
@@ -477,6 +479,8 @@ export class Globe {
         uHover: { value: -1 },
         uVisible: { value: 1 },
         uColor: { value: ACCENT },
+        uSunDir: { value: this.sunDir },
+        uUseSun: { value: 0 },
       },
       transparent: true,
       blending: AdditiveBlending,
@@ -544,6 +548,16 @@ export class Globe {
     fill(this.moonMarkerGeo, this.moonIdx);
     if (!this.markerMat) {
       this.markerMat = this.makeMarkerMaterial(12);
+      this.markerMat.uniforms.uUseSun.value = 1;
+      // Night-side backing: same size and position as the markers, normal blending, drawn just before them.
+      this.markerBackMat = this.makeMarkerMaterial(12);
+      this.markerBackMat.uniforms = { ...this.markerMat.uniforms };
+      this.markerBackMat.fragmentShader = S.markerBackFragment;
+      this.markerBackMat.blending = NormalBlending;
+      const back = new Points(this.markerGeo, this.markerBackMat);
+      back.frustumCulled = false;
+      back.renderOrder = 1.5;
+      this.scene.add(back);
       const m = new Points(this.markerGeo, this.markerMat);
       m.frustumCulled = false;
       m.renderOrder = 2;

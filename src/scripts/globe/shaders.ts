@@ -61,7 +61,7 @@ export const earthFragment = /* glsl */ `
     // City lights: a warm glow on the night side, almost invisible in daylight.
     float city = smoothstep(0.09, 0.46, det.g);
     float lights = land * mix(pow(city, 1.3) * 1.5, pow(det.g, 2.4) * 0.1, day);
-    col += mix(uAccent, vec3(1.0, 0.8, 0.5), 0.6) * lights;
+    col += vec3(1.0, 0.84, 0.55) * lights * 1.35; // warm amber, so the mint location markers stand apart
     // A faint glow along the line between day and night.
     col += uAccent * exp(-pow(sunDot / 0.07, 2.0)) * 0.045;
 
@@ -125,18 +125,23 @@ export const markerVertex = /* glsl */ `
   uniform float uSelected;
   uniform float uHover;
   uniform float uVisible;
+  uniform vec3 uSunDir;
+  uniform float uUseSun;     // 1 for Earth markers: they get a night-time treatment
   varying float vFacing;
   varying float vActive;
   varying float vIndex;
+  varying float vNight;
   void main() {
     vec4 w = modelMatrix * vec4(position, 1.0);
     vec4 mv = viewMatrix * w;
     vFacing = dot(normalize(w.xyz), normalize(cameraPosition - w.xyz));
+    // 0 in daylight, 1 on the night side (where city lights would otherwise drown the markers out).
+    vNight = uUseSun * (1.0 - smoothstep(-0.15, 0.12, dot(normalize(w.xyz), uSunDir)));
     float sel = 1.0 - step(0.5, abs(aIndex - uSelected));
     float hov = 1.0 - step(0.5, abs(aIndex - uHover));
     vActive = max(sel, hov * 0.7);
     vIndex = aIndex;
-    float size = uSize * (1.0 + sel * 0.55 + hov * 0.35);
+    float size = uSize * (1.0 + sel * 0.55 + hov * 0.35) * (1.0 + vNight * 0.45);
     // Grows a little as the camera gets closer, but never balloons when zoomed right in.
     gl_PointSize = size * uPixelRatio * clamp(6.0 / -mv.z, 0.6, 1.5) * uVisible;
     gl_Position = projectionMatrix * mv;
@@ -149,16 +154,34 @@ export const markerFragment = /* glsl */ `
   varying float vFacing;
   varying float vActive;
   varying float vIndex;
+  varying float vNight;
   void main() {
     vec2 c = gl_PointCoord - 0.5;
     float d = length(c) * 2.0;
-    float core = smoothstep(0.30, 0.18, d);
-    float halo = exp(-d * d * 7.0) * 0.55;
+    // At night the point is drawn larger, so shrink the shapes back to keep the dot crisp, then add a ring.
+    float k = mix(1.0, 1.45, vNight);
+    float dd = d * k;
+    float core = smoothstep(0.30, 0.18, dd);
+    float halo = exp(-dd * dd * 7.0) * 0.55;
     float pulse = 0.5 + 0.5 * sin(uTime * 2.2 + vIndex * 1.7);
-    float a = core + halo * (0.6 + 0.4 * pulse + vActive * 0.5);
+    float ring = smoothstep(0.10, 0.0, abs(d - 0.78)) * vNight * (0.75 + 0.25 * pulse);
+    float a = core + halo * (0.6 + 0.4 * pulse + vActive * 0.5) + ring;
     a *= smoothstep(0.02, 0.3, vFacing);
-    vec3 col = mix(uColor, vec3(1.0), core * (0.3 + vActive * 0.55));
+    vec3 col = mix(uColor, vec3(1.0), core * (0.3 + vActive * 0.55 + vNight * 0.3));
     gl_FragColor = vec4(col * a, a);
+  }
+`;
+
+/** Dark disc drawn under Earth markers on the night side so they stand out from city lights. */
+export const markerBackFragment = /* glsl */ `
+  uniform float uVisible;
+  varying float vFacing;
+  varying float vNight;
+  void main() {
+    float d = length(gl_PointCoord - 0.5) * 2.0;
+    float disc = smoothstep(0.95, 0.6, d);
+    float a = disc * 0.72 * vNight * uVisible * smoothstep(0.02, 0.3, vFacing);
+    gl_FragColor = vec4(0.0, 0.03, 0.035, a);
   }
 `;
 
