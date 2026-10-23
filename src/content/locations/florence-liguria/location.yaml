@@ -1,0 +1,120 @@
+name: Florence & Liguria
+country: Italy
+region: Tuscany and Liguria
+coordinates:
+  lat: 43.7696
+  lng: 11.2558
+description: "Brunelleschi's dome and the rooftops of Florence, then west to the colourful harbour town of Camogli on the Ligurian coast."
+photos:
+  - file: ./florence-liguria-01.jpg
+    taken: 2026-04-06T15:34:27
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 24mm
+      aperture: f/8
+      shutter: 1/320
+      iso: 100
+    title: Florence Cathedral and Giotto's Campanile
+    alt: The marble facade of Florence Cathedral beside the bell tower, against a deep blue sky
+  - file: ./florence-liguria-02.jpg
+    taken: 2026-04-06T15:41:07
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 19mm
+      aperture: f/9
+      shutter: 1/320
+      iso: 100
+    title: Florence Cathedral
+    alt: Looking up at the marble apse and dome of Florence Cathedral
+  - file: ./florence-liguria-03.jpg
+    taken: 2026-04-06T21:39:46
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 200mm
+      aperture: f/6.3
+      shutter: 1/640
+      iso: 400
+    title: The Duomo at golden hour
+    alt: Florence Cathedral's dome rising over the city with hills behind, in warm evening light
+  - file: ./florence-liguria-04.jpg
+    taken: 2026-04-06T21:40:13
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 88mm
+      aperture: f/5.6
+      shutter: 1/320
+      iso: 100
+    title: Florence at golden hour
+    alt: The skyline of Florence with the cathedral dome and bell towers at sunset
+  - file: ./florence-liguria-05.jpg
+    taken: 2026-04-13T17:35:43
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 20mm
+      aperture: f/8
+      shutter: 1/320
+      iso: 100
+    title: Camogli harbour
+    alt: Tall, colourful houses along the harbour at Camogli under storm clouds
+  - file: ./florence-liguria-06.jpg
+    taken: 2026-04-13T17:38:50
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 55mm
+      aperture: f/7.1
+      shutter: 1/500
+      iso: 100
+    title: Camogli from the sea
+    alt: Camogli seen from the water, with houses climbing a green hillside
+  - file: ./florence-liguria-07.jpg
+    taken: 2026-04-13T19:58:00
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 15mm
+      aperture: f/4
+      shutter: 1/400
+      iso: 100
+    title: Camogli beach
+    alt: A pebble beach curving towards a church and pastel houses
+  - file: ./florence-liguria-08.jpg
+    taken: 2026-04-14T12:58:02
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 37mm
+      aperture: f/9
+      shutter: 1/320
+      iso: 100
+    title: ""
+    alt: A house on a rocky cliff above the sea, with the coastline fading into the distance
+  - file: ./florence-liguria-09.jpg
+    taken: 2026-04-15T15:15:31
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 18mm
+      aperture: f/5.6
+      shutter: 1/160
+      iso: 100
+    title: ""
+    alt: A narrow lane between tall yellow and orange buildings with green shutters
+  - file: ./florence-liguria-10.jpg
+    taken: 2026-04-19T16:01:58
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 34mm
+      aperture: f/6.3
+      shutter: 1/800
+      iso: 100
+    title: Florence through wisteria
+    alt: The domes and towers of Florence framed by hanging wisteria
+cover: ./florence-liguria-03.jpg
+coverPosition: 50% 52%

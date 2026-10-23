@@ -1,0 +1,70 @@
+name: Tangala Safari Camp
+country: South Africa
+region: Thornybush Game Reserve
+coordinates:
+  lat: -24.42
+  lng: 31.16
+description: "Big-game country in the Thornybush Game Reserve, part of the Greater Kruger area: lions, leopard, rhino, elephant and nyala."
+photos:
+  - file: ./tangala-01.jpg
+    taken: 2023-01-03T08:37:45
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 164mm
+      aperture: f/6.3
+      shutter: 1/2500
+      iso: 1000
+    title: Vultures at a carcass
+    alt: Vultures crowding around a carcass in the bush, one with its wings spread
+  - file: ./tangala-02.jpg
+    taken: 2023-01-03T18:48:56
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 170mm
+      aperture: f/8
+      shutter: 1/1000
+      iso: 2000
+    title: Nyala
+    alt: A nyala bull with spiralled horns looking towards the camera
+  - file: ./tangala-03.jpg
+    taken: 2023-12-25T14:36:28
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 200mm
+      aperture: f/6.3
+      shutter: 1/640
+      iso: 2000
+    title: Vervet monkey
+    alt: A young vervet monkey peering out from green leaves
+  - file: ./tangala-04.jpg
+    title: Rhino
+    alt: A rhino standing on a sandy track
+  - file: ./tangala-05.jpg
+    title: Elephant
+    alt: An elephant feeding among bushes
+  - file: ./tangala-06.jpg
+    title: Leopard
+    alt: A leopard resting in the fork of a large tree
+  - file: ./tangala-07.jpg
+    title: Lioness
+    alt: Close-up of a lioness lying on the ground, looking up
+  - file: ./tangala-08.jpg
+    title: Elephant
+    alt: An elephant walking through the bush
+  - file: ./tangala-09.jpg
+    title: Rhino and calf
+    alt: A rhino lying in long grass beside its calf
+  - file: ./tangala-10.jpg
+    title: Lioness
+    alt: A lioness lying in the grass, staring at the camera
+  - file: ./tangala-11.jpg
+    title: Lioness
+    alt: A lioness resting her head in long grass
+  - file: ./tangala-12.jpg
+    title: Nyala
+    alt: A young nyala standing among tree branches
+cover: ./tangala-10.jpg
+coverPosition: 50% 45%

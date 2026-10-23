@@ -1,0 +1,23 @@
+---
+import Base from '../../layouts/Base.astro';
+import GlobeApp from '../../components/GlobeApp.astro';
+import { getLocations, sized } from '../../lib/locations';
+
+export async function getStaticPaths() {
+  const locations = await getLocations();
+  return locations.map((loc) => ({ params: { slug: loc.id }, props: { loc } }));
+}
+
+const { loc } = Astro.props;
+const og = await sized(loc.data.cover, 1200);
+---
+
+<Base
+  title={loc.data.name}
+  description={loc.data.description || `Photographs from ${loc.data.name}, ${loc.data.country}.`}
+  active="explore"
+  bodyClass="page-globe"
+  ogImage={og}
+>
+  <GlobeApp current={loc} />
+</Base>

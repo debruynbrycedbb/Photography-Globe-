@@ -1,0 +1,51 @@
+---
+import Base from '../layouts/Base.astro';
+import { getLocations, locationHref, sized, yearsLabel, countriesCount } from '../lib/locations';
+
+const locations = await getLocations();
+const cards = await Promise.all(
+  locations.map(async (l) => ({
+    href: locationHref(l),
+    name: l.data.name,
+    country: l.data.country,
+    photos: l.data.photos.length,
+    years: yearsLabel(l),
+    img: await sized(l.data.cover, 900),
+    pos: l.data.coverPosition,
+  })),
+);
+const countries = countriesCount(locations);
+---
+
+<Base title="All locations" active="gallery" bodyClass="is-gallery-page">
+  <main id="main" class="page">
+    <header class="page-head">
+      <p class="tag">{locations.length} locations | {countries} countries</p>
+      <h1 class="page-title">All locations</h1>
+      <p class="page-lede">Every place on the globe, in one list. Choose a location to open its gallery.</p>
+    </header>
+    <ul class="loc-grid">
+      {
+        cards.map((c) => (
+          <li>
+            <a class="loc-card" href={c.href}>
+              <div class="loc-card-media">
+                <img src={c.img} alt="" loading="lazy" decoding="async" width="900" height="600" style={`object-position:${c.pos}`} />
+              </div>
+              <h2 class="loc-card-name">
+                <span class="dot" aria-hidden="true" />
+                {c.name}
+              </h2>
+              <p class="loc-card-meta">
+                <span>{c.country}</span>
+                <span class="mono">
+                  {c.photos} photos{c.years && ` | ${c.years}`}
+                </span>
+              </p>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </main>
+</Base>

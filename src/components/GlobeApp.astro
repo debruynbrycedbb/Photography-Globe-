@@ -1,0 +1,171 @@
+---
+/**
+ * The globe experience shared by the homepage and every location page.
+ * On a location page the gallery is rendered server-side (so deep links,
+ * search engines and no-JS visitors get real HTML); on the homepage it is
+ * fetched from that page when a visitor travels to a location.
+ */
+import Gallery from './Gallery.astro';
+import { site } from '../site.config';
+import { getLocations, clientSummary, countriesCount, withBase, sized, type Location } from '../lib/locations';
+
+interface Props {
+  current?: Location;
+}
+const { current } = Astro.props;
+const locations = await getLocations();
+const data = await Promise.all(locations.map(clientSummary));
+const featured =
+  data.find((l) => l.slug === (current?.id ?? site.featuredLocation)) ?? data[0];
+const idx = current ? locations.findIndex((l) => l.id === current.id) : -1;
+const next = idx >= 0 ? locations[(idx + 1) % locations.length] : undefined;
+const panelImg = featured ? await sized(locations.find((l) => l.id === featured.slug)!.data.cover, 960) : '';
+const countries = countriesCount(locations);
+---
+
+<main id="main" class:list={['app', { 'is-gallery': !!current }]} data-app data-initial={current?.id ?? ''} data-home-title={site.title}>
+  <script type="application/json" id="locations-data" set:html={JSON.stringify(data)} />
+
+  <!-- 3D globe -->
+  <div
+    class="globe-stage"
+    data-globe-stage
+    tabindex="0"
+    role="application"
+    aria-roledescription="interactive globe"
+    aria-label="Interactive globe. Drag or use the arrow keys to rotate, plus and minus to zoom, Enter to open the selected location. All locations are also listed below the globe."
+  >
+    <canvas class="globe-canvas" data-globe-canvas aria-hidden="true"></canvas>
+    <div class="globe-ring" data-globe-ring aria-hidden="true"></div>
+    <div class="globe-tip" data-globe-tip aria-hidden="true"></div>
+    <p class="globe-fallback" data-globe-fallback hidden>
+      Your browser can't show the 3D globe. Choose a location below, or
+      <a href={withBase('gallery/')}>browse all locations</a>.
+    </p>
+  </div>
+
+  <!-- Homepage interface -->
+  <div class="chrome" data-chrome>
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="tag">{site.hero.tag}</p>
+      <h1 id="hero-title" class="hero-title">{site.hero.headline}</h1>
+      <p class="hero-intro">{site.hero.intro}</p>
+      <span class="hero-rule" aria-hidden="true"></span>
+      <p class="hint">
+        <svg class="hint-mouse" viewBox="0 0 24 34" aria-hidden="true">
+          <rect x="1.5" y="1.5" width="21" height="31" rx="10.5"></rect><path d="M12 8v6"></path>
+        </svg>
+        <span class="hint-text">
+          <span class="hint-pointer">Drag to rotate</span>
+          <span class="hint-pointer">Scroll to zoom</span>
+          <span class="hint-touch">Drag to rotate · pinch to zoom</span>
+        </span>
+      </p>
+    </section>
+
+    {
+      featured && (
+        <aside class="panel" aria-label="Selected location" aria-live="polite" data-panel>
+          <a class="panel-media" href={featured.href} data-location={featured.slug} data-panel-link tabindex="-1" aria-hidden="true">
+            <img src={panelImg || featured.thumb} alt="" width="960" height="640" style={`object-position:${featured.coverPosition}`} data-panel-img />
+          </a>
+          <div class="panel-body">
+            <h2 class="panel-name"><span class="dot" aria-hidden="true"></span><span data-panel-name>{featured.name}</span></h2>
+            <p class="panel-country" data-panel-country>{featured.country}</p>
+            <p class="panel-desc" data-panel-desc>{featured.description}</p>
+            <a class="cta" href={featured.href} data-location={featured.slug} data-panel-cta>
+              <span>View gallery</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg>
+            </a>
+          </div>
+          <dl class="stats panel-stats">
+            <div><dt>Photos</dt><dd data-panel-photos>{featured.photos}</dd></div>
+            <div><dt>Year</dt><dd data-panel-years>{featured.years || '—'}</dd></div>
+            <div><dt>Camera</dt><dd data-panel-camera>{featured.camera || '—'}</dd></div>
+            <div><dt>Lens</dt><dd data-panel-lens>{featured.lens || '—'}</dd></div>
+          </dl>
+        </aside>
+      )
+    }
+
+    <nav class="strip" aria-label="Locations">
+      <button class="strip-arrow strip-arrow--prev" type="button" aria-label="Scroll locations left" data-strip-prev>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"></path></svg>
+      </button>
+      <ul class="strip-track" data-strip>
+        {
+          data.map((l, i) => (
+            <li>
+              <button
+                class="strip-item"
+                type="button"
+                data-select={l.slug}
+                aria-pressed={l.slug === featured?.slug ? 'true' : 'false'}
+                aria-label={`${l.name}, ${l.country}`}
+              >
+                <span class="strip-thumb" style={`background:${l.palette.avg}`}>
+                  <img src={l.thumb} alt="" loading={i < 8 ? 'eager' : 'lazy'} decoding="async" width="640" height="427" style={`object-position:${l.coverPosition}`} />
+                </span>
+                <span class="strip-label">{l.name}</span>
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+      <button class="strip-arrow strip-arrow--next" type="button" aria-label="Scroll locations right" data-strip-next>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"></path></svg>
+      </button>
+    </nav>
+
+    <footer class="home-footer">
+      <a class="totals" href={withBase('gallery/')}>
+        <span class="totals-rule" aria-hidden="true"></span>
+        <span>{locations.length} {locations.length === 1 ? 'location' : 'locations'}</span>
+        <span class="sep" aria-hidden="true"></span>
+        <span>{countries} {countries === 1 ? 'country' : 'countries'}</span>
+      </a>
+      <button class="more" type="button" data-more>
+        <span class="more-rule" aria-hidden="true"></span>
+        <span>More to explore</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg>
+      </button>
+    </footer>
+  </div>
+
+  <!-- Descent sky + gallery -->
+  <div class="descent-sky" data-sky aria-hidden="true"></div>
+  <div class="gallery-layer" data-gallery-layer>
+    {current && <Gallery loc={current} next={next} />}
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" data-lightbox role="dialog" aria-modal="true" aria-label="Photo viewer" hidden>
+    <div class="lb-stage" data-lb-stage>
+      <img class="lb-img" data-lb-img alt="" sizes="100vw" />
+    </div>
+    <div class="lb-bar">
+      <div class="lb-meta">
+        <p class="lb-title" data-lb-title></p>
+        <p class="lb-caption" data-lb-caption></p>
+        <p class="lb-exif mono" data-lb-exif></p>
+      </div>
+      <p class="lb-count mono" data-lb-count></p>
+    </div>
+    <button class="lb-btn lb-close" type="button" data-lb-close aria-label="Close photo viewer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+    </button>
+    <button class="lb-btn lb-prev" type="button" data-lb-prev aria-label="Previous photo">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"></path></svg>
+    </button>
+    <button class="lb-btn lb-next" type="button" data-lb-next aria-label="Next photo">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"></path></svg>
+    </button>
+  </div>
+
+  <p class="visually-hidden" aria-live="polite" data-announcer></p>
+</main>
+
+<script>
+  import { startApp } from '../scripts/app';
+  startApp();
+</script>

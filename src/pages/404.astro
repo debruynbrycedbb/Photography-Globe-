@@ -1,0 +1,15 @@
+---
+import Base from '../layouts/Base.astro';
+import { withBase } from '../lib/locations';
+---
+
+<Base title="Page not found" bodyClass="is-gallery-page">
+  <main id="main" class="page">
+    <header class="page-head">
+      <p class="tag">404</p>
+      <h1 class="page-title">Off the map</h1>
+      <p class="page-lede">This page doesn't exist. It may have been moved or renamed.</p>
+    </header>
+    <p><a class="cta" href={withBase('')}><span>Back to the globe</span></a></p>
+  </main>
+</Base>

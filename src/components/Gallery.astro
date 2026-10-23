@@ -1,0 +1,179 @@
+---
+import {
+  type Location,
+  responsive,
+  palette,
+  visitLabels,
+  yearsLabel,
+  mainCamera,
+  mainLens,
+  formatDate,
+  settingsLabel,
+  withBase,
+  locationHref,
+} from '../lib/locations';
+import { site } from '../site.config';
+
+interface Props {
+  loc: Location;
+  next?: Location;
+}
+const { loc, next } = Astro.props;
+const d = loc.data;
+
+const hero = await responsive(d.cover, [800, 1200, 1600, 2400]);
+const pal = await palette(loc);
+const visits = visitLabels(loc);
+const years = yearsLabel(loc);
+const camera = mainCamera(loc);
+const lens = mainLens(loc);
+const place = [d.region, d.country].filter(Boolean).join(', ');
+// Portrait-heavy galleries get taller rows so photos aren't shown as thin slivers.
+const ratios = d.photos.map((p) => p.file.width / p.file.height).sort((a, b) => a - b);
+const medianRatio = ratios[Math.floor(ratios.length / 2)];
+const portraitSet = medianRatio < 1;
+
+const photos = await Promise.all(
+  d.photos.map(async (p, i) => {
+    const r = await responsive(p.file);
+    const ar = p.file.width / p.file.height;
+    const pal = await palette(loc, i);
+    return {
+      ...r,
+      ar,
+      color: pal.avg,
+      title: p.title,
+      alt: p.alt || p.title || `${d.name} photograph ${i + 1}`,
+      caption: p.caption ?? '',
+      date: formatDate(p.taken),
+      camera: p.camera ?? '',
+      lens: p.lens ?? '',
+      settings: settingsLabel(p),
+      featured: p.featured,
+    };
+  }),
+);
+---
+
+<article
+  class="gallery"
+  data-gallery
+  data-slug={loc.id}
+  data-title={`${d.name} | ${site.title}`}
+  style={`--sky-top:${pal.top};--sky-mid:${pal.mid};--sky-bottom:${pal.bottom};`}
+  aria-labelledby={`title-${loc.id}`}
+>
+  <section class="g-hero">
+    <div class="g-hero-media" data-hero-media>
+      <img
+        class="g-hero-img"
+        src={hero.src}
+        srcset={hero.srcset}
+        sizes="100vw"
+        width={hero.width}
+        height={hero.height}
+        alt=""
+        fetchpriority="high"
+        style={`object-position:${d.coverPosition}`}
+        decoding="async"
+        data-hero-img
+      />
+    </div>
+    <div class="g-hero-shade" aria-hidden="true"></div>
+
+    <a class="back-link" href={withBase('')} data-back>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"></path></svg>
+      <span>Back to globe</span>
+    </a>
+
+    <div class="g-hero-inner" data-hero-text>
+      <div class="g-hero-text">
+        <p class="tag">{d.country}</p>
+        <h1 class="g-title" id={`title-${loc.id}`}>{d.name}</h1>
+        {place && <p class="g-place">{place}</p>}
+        {visits.length > 0 && (
+          <ul class="g-visits" aria-label="Visit dates">
+            {visits.map((v) => <li>{v}</li>)}
+          </ul>
+        )}
+      </div>
+      <dl class="stats g-stats">
+        <div><dt>Photos</dt><dd>{d.photos.length}</dd></div>
+        <div><dt>Year</dt><dd>{years || '—'}</dd></div>
+        <div><dt>Camera</dt><dd>{camera || '—'}</dd></div>
+        <div><dt>Lens</dt><dd>{lens || '—'}</dd></div>
+      </dl>
+    </div>
+
+    <a class="scroll-cue" href={`#photos-${loc.id}`} data-scroll-cue>
+      <span>View photos</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m-6-6 6 6 6-6"></path></svg>
+    </a>
+  </section>
+
+  <div class="g-body" data-gallery-body>
+    {(d.description || d.notes) && (
+      <section class="g-intro">
+        {d.description && <p class="g-desc">{d.description}</p>}
+        {d.notes && <p class="g-notes">{d.notes}</p>}
+      </section>
+    )}
+
+    <section class:list={['g-grid', { 'g-grid--portrait': portraitSet }]} id={`photos-${loc.id}`} aria-label={`Photos from ${d.name}`} data-grid>
+      {
+        photos.map((p, i) => (
+          <figure class:list={['g-item', { 'is-portrait': p.ar < 1 }]} style={`--ar:${p.ar.toFixed(4)};--ph:${p.color}`}>
+            <button
+              class="g-open"
+              type="button"
+              data-photo={i}
+              data-srcset={p.srcset}
+              data-title={p.title}
+              data-caption={p.caption}
+              data-date={p.date}
+              data-camera={p.camera}
+              data-lens={p.lens}
+              data-settings={p.settings}
+              data-w={p.width}
+              data-h={p.height}
+              aria-label={`Open ${p.title || 'photo ' + (i + 1)}`}
+            >
+              <img
+                src={p.src}
+                srcset={p.srcset}
+                sizes={`(max-width: 640px) 100vw, ${Math.min(Math.round(p.ar * 400), 1400)}px`}
+                width={p.width}
+                height={p.height}
+                alt={p.alt}
+                loading="lazy"
+                decoding="async"
+              />
+            </button>
+            {(p.title || p.date) && (
+              <figcaption>
+                <span>{p.title}</span>
+                {p.date && <span class="mono">{p.date}</span>}
+              </figcaption>
+            )}
+          </figure>
+        ))
+      }
+    </section>
+
+    <footer class="g-end">
+      <a class="back-link back-link--inline" href={withBase('')} data-back>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"></path></svg>
+        <span>Back to globe</span>
+      </a>
+      {
+        next && (
+          <a class="g-next" href={locationHref(next)} data-location={next.id}>
+            <span class="label">Next destination</span>
+            <span class="g-next-name">{next.data.name}</span>
+            <span class="g-next-country">{next.data.country}</span>
+          </a>
+        )
+      }
+    </footer>
+  </div>
+</article>

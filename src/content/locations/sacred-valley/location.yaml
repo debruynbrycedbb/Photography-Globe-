@@ -1,0 +1,63 @@
+name: Sacred Valley
+country: Peru
+region: Cusco
+coordinates:
+  lat: -13.3048
+  lng: -72.1162
+description: "Inca terraces, the Maras salt pans and Machu Picchu in the Andes of southern Peru."
+photos:
+  - file: ./sacred-valley-01.jpg
+    taken: 2022-08-04T19:42:52
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 15mm
+      aperture: f/9
+      shutter: 1/400
+      iso: 100
+    title: Inca terraces
+    alt: Curved Inca agricultural terraces on a dry hillside under a blue sky
+  - file: ./sacred-valley-02.jpg
+    taken: 2022-08-05T16:14:01
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 78mm
+      aperture: f/7.1
+      shutter: 1/500
+      iso: 100
+    title: ""
+    alt: A bare branch against mist rolling over a dark mountainside
+  - file: ./sacred-valley-03.jpg
+    taken: 2022-08-05T18:38:00
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 200mm
+      aperture: f/9
+      shutter: 1/640
+      iso: 200
+    title: Salineras de Maras
+    alt: A worker among the terraced salt pans of Maras
+  - file: ./sacred-valley-04.jpg
+    taken: 2022-08-07T16:47:11
+    camera: Canon EOS M50
+    lens: EF-M15-45mm f/3.5-6.3 IS STM
+    settings:
+      focal: 15mm
+      aperture: f/22
+      shutter: 1/20
+      iso: 100
+    title: Machu Picchu
+    alt: The ruins of Machu Picchu beneath Huayna Picchu, with clouds over the mountains
+  - file: ./sacred-valley-05.jpg
+    title: ""
+    alt: A glacier between dark rocky peaks under a blue sky
+  - file: ./sacred-valley-06.jpg
+    title: ""
+    alt: Jagged peaks disappearing into thick cloud
+  - file: ./sacred-valley-07.jpg
+    title: ""
+    alt: Low cloud drifting over a steep hillside dotted with trees
+cover: ./sacred-valley-04.jpg
+coverPosition: 50% 48%
