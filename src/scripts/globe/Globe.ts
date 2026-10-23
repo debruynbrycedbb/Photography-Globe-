@@ -82,7 +82,8 @@ export interface GlobeView {
   body: number;
 }
 
-export const ZOOM_MIN = 0.24;
+/** Fallback; the real limit depends on the screen (see minZoom()). */
+export const ZOOM_MIN = 0.12;
 export const ZOOM_MAX = 1.55;
 
 export interface CloudState {
@@ -343,6 +344,14 @@ export class Globe {
     this.orbitDots.rotation.copy(ring.rotation);
     this.orbitDots.frustumCulled = false;
     this.orbit.add(ring, this.orbitDots);
+    // The ring belongs to the Earth: it is fixed in space around it (so it turns with the globe
+    // and stays behind when the camera flies to the Moon). Its tilt is chosen so that, seen from
+    // the usual opening view, it frames the globe like the reference design.
+    const ref = new PerspectiveCamera();
+    latLngToVec3(34, 11, 5, ref.position);
+    ref.up.set(0, 1, 0);
+    ref.lookAt(0, 0, 0);
+    this.orbit.quaternion.copy(ref.quaternion);
     this.scene.add(this.orbit);
   }
 
@@ -506,9 +515,6 @@ export class Globe {
     this.camera.setViewOffset(this.w, this.h, 0, offset, this.w, this.h);
     this.camera.updateProjectionMatrix();
     this.camera.updateMatrixWorld();
-    this.orbit.position.copy(this.center);
-    this.orbit.scale.setScalar(this.bodyR);
-    this.orbit.quaternion.copy(this.camera.quaternion);
     this.placeMoon();
   }
 
@@ -608,7 +614,8 @@ export class Globe {
     this.moonMarkerMat.uniforms.uHover.value = this.hovered;
     this.moonMarkerMat.uniforms.uVisible.value = fadeOrbit * clamp((f - 0.6) / 0.4, 0, 1);
     for (const m of this.lineMats) m.uniforms.uOpacity.value = (m as any).baseOpacity * intro * (1 - this.view.descend * 0.6);
-    this.lineMats[this.lineMats.length - 1].uniforms.uOpacity.value = 0.5 * fadeOrbit;
+    const ringZoom = clamp((this.view.zoom - 0.45) / 0.35, 0, 1);
+    this.lineMats[this.lineMats.length - 1].uniforms.uOpacity.value = 0.5 * fadeOrbit * ringZoom;
     this.markerMat.uniforms.uTime.value = t;
     this.markerMat.uniforms.uSelected.value = this.selected;
     this.markerMat.uniforms.uHover.value = this.hovered;
@@ -622,7 +629,7 @@ export class Globe {
     dots.setXYZ(0, Math.cos(a1) * 1.5, Math.sin(a1) * 1.5, 0);
     dots.setXYZ(1, Math.cos(a2) * 1.5, Math.sin(a2) * 1.5, 0);
     dots.needsUpdate = true;
-    (this.orbitDots.material as ShaderMaterial).uniforms.uVisible.value = fadeOrbit * 0.8;
+    (this.orbitDots.material as ShaderMaterial).uniforms.uVisible.value = fadeOrbit * 0.8 * ringZoom;
     (this.orbitDots.material as ShaderMaterial).uniforms.uTime.value = t;
 
     this.renderer.clear();
@@ -707,7 +714,7 @@ export class Globe {
    * Zoom level at which marker i is at least `px` pixels from its nearest neighbour
    * on the same body (1 when it is already well separated).
    */
-  zoomToSeparate(i: number, px = 26) {
+  zoomToSeparate(i: number, px = 40) {
     const mine = this.isMoon(i);
     const a = latLngToVec3(this.points[i].lat, this.points[i].lng, 1);
     let nearest = Infinity;
@@ -726,7 +733,7 @@ export class Globe {
     const D0 = this.baseDist;
     const focal = this.radiusPx * Math.sqrt(D0 * D0 - 1);
     const z = (1 + (focal * gapRad) / px) / D0;
-    return clamp(Math.min(1, z), ZOOM_MIN, 1);
+    return clamp(Math.min(1, z), this.minZoom(), 1);
   }
 
   markIdle() {
@@ -752,8 +759,20 @@ export class Globe {
     this.opts.onInteract?.();
   }
 
+  /** Closest the camera may get: about 12% of the Earth's radius above the surface. */
+  minZoom() {
+    return Math.max(ZOOM_MIN, 1.12 / this.baseDist);
+  }
+
+  /** Degrees of rotation per dragged pixel, so the surface stays under the finger at any zoom. */
+  private degPerPx() {
+    const D0 = this.baseDist;
+    const focal = this.radiusPx * Math.sqrt(D0 * D0 - 1);
+    return Math.max(0.0005, D0 * this.view.zoom - 1) / (focal * DEG);
+  }
+
   zoomBy(factor: number) {
-    this.view.zoom = clamp(this.view.zoom * factor, ZOOM_MIN, ZOOM_MAX);
+    this.view.zoom = clamp(this.view.zoom * factor, this.minZoom(), ZOOM_MAX);
     this.markIdle();
   }
 
@@ -796,6 +815,11 @@ export class Globe {
   private cluster(x: number, y: number): number[] {
     const hits = this.near(x, y, 24);
     if (hits.length < 2) return [];
+    // Tapped right on a dot: that's a clear choice, not an ambiguous group.
+    const first = this.screen[hits[0]];
+    if ((first.x - x) ** 2 + (first.y - y) ** 2 < 9 * 9) return [];
+    // Already zoomed in as far as possible: just pick the nearest.
+    if (this.view.zoom <= this.minZoom() * 1.05) return [];
     const a = this.screen[hits[0]];
     const close = hits.filter((i) => Math.hypot(this.screen[i].x - a.x, this.screen[i].y - a.y) < 22);
     return close.length > 1 && !close.includes(this.selected) ? close : [];
@@ -847,7 +871,7 @@ export class Globe {
       if (this.pointers.size === 2) {
         const [a, b] = [...this.pointers.values()];
         const d = Math.hypot(a.x - b.x, a.y - b.y);
-        if (this.pinchStart > 0) this.view.zoom = clamp(this.zoomStart * (this.pinchStart / d), ZOOM_MIN, ZOOM_MAX);
+        if (this.pinchStart > 0) this.view.zoom = clamp(this.zoomStart * (this.pinchStart / d), this.minZoom(), ZOOM_MAX);
         this.down.moved = 999;
         return;
       }
@@ -855,7 +879,7 @@ export class Globe {
       const dy = y - prev.y;
       this.down.moved += Math.abs(dx) + Math.abs(dy);
       // Rotate so the surface follows the pointer.
-      const degPerPx = (57.3 / this.radiusPx) * this.view.zoom * 0.9;
+      const degPerPx = this.degPerPx();
       this.view.lng -= dx * degPerPx;
       this.view.lat = clamp(this.view.lat + dy * degPerPx, -75, 75);
       const now = performance.now();

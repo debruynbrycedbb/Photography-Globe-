@@ -28,6 +28,17 @@ photos:
       iso: 1250
     title: ""
     alt: A tall copper-coloured tower lit by the evening sun
+  - file: ./rotterdam-06.jpg
+    taken: 2022-06-19T22:52:35
+    camera: Canon EOS M50
+    lens: EF-M55-200mm f/4.5-6.3 IS STM
+    settings:
+      focal: 75mm
+      aperture: f/5
+      shutter: 1/320
+      iso: 800
+    title: ""
+    alt: Soft pink and orange sunset clouds
   - file: ./rotterdam-03.jpg
     taken: 2022-06-19T22:53:21
     camera: Canon EOS M50
