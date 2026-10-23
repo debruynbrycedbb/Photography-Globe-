@@ -51,6 +51,12 @@ export function yearsLabel(loc: Location): string {
   return years.length === 1 ? String(years[0]) : `${years[0]}–${years[years.length - 1]}`;
 }
 
+/** When the first photo (or visit) at a location was taken; orders "Play my journey". */
+export function firstVisit(loc: Location): { firstDate: string; firstLabel: string } {
+  const d = allDates(loc).sort((a, b) => +a - +b)[0];
+  return d ? { firstDate: d.toISOString(), firstLabel: fmtMonth.format(d) } : { firstDate: '', firstLabel: '' };
+}
+
 const fmtDay = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 const fmtMonth = new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
@@ -173,6 +179,7 @@ export async function clientSummary(loc: Location) {
     description: loc.data.description,
     photos: loc.data.photos.length,
     years: yearsLabel(loc),
+    ...firstVisit(loc),
     camera: mainCamera(loc),
     lens: mainLens(loc),
     href: locationHref(loc),

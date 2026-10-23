@@ -17,7 +17,7 @@ export const earthFragment = /* glsl */ `
   uniform sampler2D uMask;     // r: land, g: soft coast glow
   uniform sampler2D uDetail;   // r: relief, g: city lights, b: surface brightness
   uniform vec2 uTexel;
-  uniform vec3 uLightDir;
+  uniform vec3 uSunDir;      // direction of the real Sun (world space)
   uniform vec3 uAccent;
   uniform float uIntro;
   varying vec2 vUv;
@@ -41,7 +41,10 @@ export const earthFragment = /* glsl */ `
     float hS = texture2D(uDetail, vUv + vec2(0.0, uTexel.y)).r;
     float hill = clamp(0.5 + ((hW - hE) + (hN - hS)) * 5.0, 0.0, 1.0);
 
-    float light = clamp(dot(N, uLightDir) * 0.55 + 0.6, 0.28, 1.0);
+    // Real day and night: the side facing the Sun is lit, the far side dims and its city lights come on.
+    float sunDot = dot(N, uSunDir);
+    float day = smoothstep(-0.10, 0.22, sunDot);
+    float light = mix(0.26, 1.05, day);
 
     vec3 oceanDeep = vec3(0.006, 0.017, 0.023);
     vec3 oceanEdge = vec3(0.014, 0.052, 0.062);
@@ -55,9 +58,12 @@ export const earthFragment = /* glsl */ `
 
     vec3 col = mix(ocean, landCol, land) * light;
 
-    // City lights, very restrained.
-    float lights = pow(det.g, 2.4) * land;
-    col += mix(uAccent, vec3(1.0), 0.35) * lights * mix(0.35, 0.9, 1.0 - light);
+    // City lights: a warm glow on the night side, almost invisible in daylight.
+    float city = smoothstep(0.09, 0.46, det.g);
+    float lights = land * mix(pow(city, 1.3) * 1.5, pow(det.g, 2.4) * 0.1, day);
+    col += mix(uAccent, vec3(1.0, 0.8, 0.5), 0.6) * lights;
+    // A faint glow along the line between day and night.
+    col += uAccent * exp(-pow(sunDot / 0.07, 2.0)) * 0.045;
 
     // Rim light
     float fres = pow(1.0 - ndv, 3.2);
@@ -244,6 +250,32 @@ export const moonFragment = /* glsl */ `
     vec3 col = base * mix(0.62, 1.32, hill) * (0.02 + 0.98 * diff);
     col *= 1.0 + 0.12 * uHover; // slight brighten on hover instead of a glow
     gl_FragColor = vec4(col * uFade, uFade);
+  }
+`;
+
+// Live ISS orbit path: brighter ahead of the station, dimmer behind, fading at both ends.
+export const trackVertex = /* glsl */ `
+  attribute float aT;
+  varying float vT;
+  varying float vFacing;
+  void main() {
+    vT = aT;
+    vec4 w = modelMatrix * vec4(position, 1.0);
+    vFacing = dot(normalize(w.xyz), normalize(cameraPosition - w.xyz));
+    gl_Position = projectionMatrix * viewMatrix * w;
+  }
+`;
+
+export const trackFragment = /* glsl */ `
+  uniform vec3 uColor;
+  uniform float uOpacity;
+  varying float vT;
+  varying float vFacing;
+  void main() {
+    float ends = smoothstep(0.0, 0.2, vT) * smoothstep(1.0, 0.8, vT);
+    float ahead = mix(0.35, 1.0, step(0.5, vT));
+    float a = uOpacity * ends * ahead * mix(0.35, 1.0, smoothstep(-0.2, 0.3, vFacing));
+    gl_FragColor = vec4(uColor * a, a);
   }
 `;
 

@@ -5,7 +5,7 @@ A photography portfolio built around an interactive 3D Earth. Visitors rotate th
 - **Framework:** [Astro](https://astro.build) (static site, works on GitHub Pages)
 - **3D:** [Three.js](https://threejs.org) with custom shaders
 - **Animation:** [GSAP](https://gsap.com)
-- **Cost:** free. No API keys, no external services.
+- **Cost:** free. No API keys. The only outside service is the free, public ISS orbit data (see below).
 
 > **Original photos:** keep your full-size originals in `Photos for Globe/` (or anywhere else). That folder is excluded from Git; only the resized, metadata-free copies in `src/content/locations/` are published.
 
@@ -152,6 +152,8 @@ src/
     app.ts                    selection, journeys, history, links
     globe/Globe.ts            Three.js scene, camera, input
     globe/shaders.ts          Earth, atmosphere, markers, stars, clouds
+    globe/sun.ts              where the Sun is overhead right now (day and night)
+    globe/iss.ts              live ISS position
     lightbox.ts               full-screen photo viewer
 scripts/
   add-photos.mjs              photo import (EXIF, resize, strip metadata)
@@ -164,6 +166,12 @@ scripts/
 - **Images** are resized at build time into several WebP sizes, and each visitor downloads the size their screen needs.
 - **Accessibility:** the globe can be rotated with arrow keys, zoomed with + / −, and Enter opens the selected location. Every location is also a button in the strip. Reduced-motion settings replace the flight with a short fade.
 - **Fallback:** if a device can't run WebGL, the globe area shows a message and visitors use the location strip or the Gallery page.
+
+### Live features
+
+- **Day and night** follow the real position of the Sun, worked out from the visitor's clock (`src/scripts/globe/sun.ts`), so it's the same for every visitor at the same moment. No location permission is needed. City lights show on the night side.
+- **The ISS** is drawn at its real position, with its path for half an orbit either side. Its published orbit is downloaded from [CelesTrak](https://celestrak.org) (backup: [wheretheiss.at](https://wheretheiss.at)), cached in the browser for 12 hours, and the position is calculated on the visitor's device with [satellite.js](https://github.com/shashwatak/satellite-js) (`src/scripts/globe/iss.ts`). Latitude and longitude are exact; its height is drawn 2.5× higher than reality so it doesn't hug the globe. If neither source is reachable, the ISS is simply not shown.
+- **Play my journey** visits every Earth location in order of its earliest photo date (or `visits` date), drawing a flight arc for each leg. Any click, drag, scroll or Escape stops it. To change the order, fix the dates in `location.yaml`.
 
 ### Map data credits
 

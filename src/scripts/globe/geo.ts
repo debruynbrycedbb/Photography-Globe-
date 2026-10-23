@@ -17,6 +17,22 @@ export function angleDelta(a: number, b: number): number {
   return ((((b - a) % 360) + 540) % 360) - 180;
 }
 
+/** Point a fraction t of the way along the great circle from unit vector a to unit vector b. */
+export function slerpDir(a: Vector3, b: Vector3, t: number, out = new Vector3()): Vector3 {
+  const ang = a.angleTo(b);
+  if (ang < 1e-6) return out.copy(a);
+  const s = Math.sin(ang);
+  return out
+    .copy(a)
+    .multiplyScalar(Math.sin((1 - t) * ang) / s)
+    .addScaledVector(b, Math.sin(t * ang) / s);
+}
+
+export function vecToLatLng(v: Vector3) {
+  const n = v.clone().normalize();
+  return { lat: Math.asin(Math.max(-1, Math.min(1, n.y))) / DEG, lng: Math.atan2(-n.z, n.x) / DEG };
+}
+
 export const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 export const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 

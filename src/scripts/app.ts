@@ -1,7 +1,7 @@
 import gsap from 'gsap';
 import { Vector3 } from 'three';
-import { Globe, MOON_HOVER } from './globe/Globe';
-import { angleDelta, latLngToVec3 } from './globe/geo';
+import { Globe, ISS_HOVER, MOON_HOVER } from './globe/Globe';
+import { angleDelta, clamp, latLngToVec3, lerp, slerpDir, vecToLatLng } from './globe/geo';
 import { Lightbox } from './lightbox';
 
 interface Loc {
@@ -14,6 +14,8 @@ interface Loc {
   description: string;
   photos: number;
   years: string;
+  firstDate: string;
+  firstLabel: string;
   camera: string;
   lens: string;
   href: string;
@@ -101,6 +103,9 @@ export function startApp() {
 
   // ------------------------------------------------------------ globe
   let globe: Globe | null = null;
+  /** The ISS readout is showing in the tooltip. */
+  let issTip = false;
+  let issTipTimer = 0;
 
   const fallback = () => {
     globe = null;
@@ -125,8 +130,23 @@ export function startApp() {
         const m = data.findIndex((l) => l.body === 'moon');
         if (m >= 0) select(m);
       },
+      onIss: (over, _x, _y, tapped) => {
+        if (over) {
+          issTip = true;
+          tip.classList.add('is-visible');
+          clearTimeout(issTipTimer);
+          // On touch screens a tap shows the readout for a few seconds.
+          if (tapped) issTipTimer = window.setTimeout(() => { issTip = false; tip.classList.remove('is-visible'); }, 4000);
+        } else if (issTip && globe?.hovered !== ISS_HOVER) {
+          issTip = false;
+          tip.classList.remove('is-visible');
+        }
+      },
       onCluster: (ids) => zoomToCluster(ids),
-      onInteract: () => root.classList.add('has-interacted'),
+      onInteract: () => {
+        root.classList.add('has-interacted');
+        stopJourney();
+      },
       fitBox: () => {
         const header = document.querySelector('[data-header]')?.getBoundingClientRect();
         const strip = document.querySelector('.strip')?.getBoundingClientRect();
@@ -144,13 +164,22 @@ export function startApp() {
       ring.style.transform = `translate3d(${s?.x ?? -99}px, ${s?.y ?? -99}px, 0)`;
       ring.style.opacity = show ? String(Math.min(1, (s.facing - 0.12) * 4) * up) : '0';
       // "Tap again" arrows: only once the globe has stopped turning towards the selection.
-      ring.classList.toggle('is-cued', !!show && cued && mode === 'globe');
+      ring.classList.toggle('is-cued', !!show && cued && mode === 'globe' && !journey);
       if (globe && globe.hovered >= 0) {
         const h = screen[globe.hovered];
         tip.style.transform = `translate3d(${h.x}px, ${h.y}px, 0)`;
       } else if (globe && globe.hovered === MOON_HOVER) {
         const m = globe.moonOnScreen();
         tip.style.transform = `translate3d(${m.x}px, ${m.y - m.r + 8}px, 0)`;
+      } else if (globe && issTip) {
+        const iss = globe.issInfo();
+        if (!iss || !iss.screen.visible) {
+          issTip = false;
+          tip.classList.remove('is-visible');
+        } else {
+          tip.textContent = `ISS · live · ${Math.round(iss.heightKm)} km up · ${(Math.round(iss.speedKmh / 10) * 10).toLocaleString('en-GB')} km/h`;
+          tip.style.transform = `translate3d(${iss.screen.x}px, ${iss.screen.y}px, 0)`;
+        }
       }
     };
     stage.addEventListener('globe:lost', fallback);
@@ -327,6 +356,7 @@ export function startApp() {
   }
 
   $('[data-back-earth]')?.addEventListener('click', () => {
+    stopJourney();
     if (mode === 'globe' && globe?.onMoon) select(lastEarth);
   });
 
@@ -340,6 +370,7 @@ export function startApp() {
   track?.addEventListener('click', (e) => {
     const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-select]');
     if (!b) return;
+    stopJourney();
     const i = indexOf(b.dataset.select!);
     if (i === selected && mode === 'globe') enter(i);
     else select(i);
@@ -348,7 +379,175 @@ export function startApp() {
     track.scrollBy({ left: d * track.clientWidth * 0.75, behavior: reduced ? 'auto' : 'smooth' });
   $('[data-strip-prev]')?.addEventListener('click', () => scrollStrip(-1));
   $('[data-strip-next]')?.addEventListener('click', () => scrollStrip(1));
-  $('[data-more]')?.addEventListener('click', () => select((selected + 1) % data.length));
+  $('[data-more]')?.addEventListener('click', () => {
+    stopJourney();
+    select((selected + 1) % data.length);
+  });
+
+  // ------------------------------------------------------------ "Play my journey"
+  /**
+   * Visits every Earth location in the order Bryce first photographed it, drawing a
+   * flight arc for each leg and following it with the camera. Any interaction stops it.
+   */
+  const journeyStops = data
+    .map((l, i) => ({ l, i }))
+    .filter(({ l }) => l.body !== 'moon' && l.firstDate)
+    .sort((a, b) => a.l.firstDate.localeCompare(b.l.firstDate))
+    .map(({ i }) => i);
+  const journeyBtns = $$<HTMLButtonElement>('[data-journey]');
+  const caption = $('[data-journey-caption]');
+  let journey: { cancelled: boolean; wake: () => void } | null = null;
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  function setJourneyUi(on: boolean) {
+    root.classList.toggle('is-journey', on);
+    for (const b of journeyBtns) {
+      b.setAttribute('aria-pressed', String(on));
+      $('[data-journey-label]', b).textContent = on ? 'Stop journey' : 'Play my journey';
+    }
+  }
+
+  function showCaption(k: number) {
+    const l = data[journeyStops[k]];
+    $('[data-journey-count]', caption).textContent = `${pad(k + 1)} / ${pad(journeyStops.length)}`;
+    $('[data-journey-place]', caption).textContent = l.name;
+    $('[data-journey-date]', caption).textContent = l.firstLabel;
+    announcer.textContent = `Stop ${k + 1} of ${journeyStops.length}: ${l.name}, ${l.country}, ${l.firstLabel}.`;
+  }
+
+  function stopJourney() {
+    if (!journey) {
+      // Arcs from a finished journey stay until the visitor does something else.
+      if (globe && root.classList.contains('has-arcs')) {
+        gsap.killTweensOf(globe.view);
+        globe.setFlying(false);
+        fadeArcs();
+      }
+      return;
+    }
+    journey.cancelled = true;
+    journey.wake();
+    journey = null;
+    if (globe) {
+      gsap.killTweensOf(globe.view);
+      globe.setFlying(false);
+    }
+    setJourneyUi(false);
+    fadeArcs();
+    cued = true;
+  }
+
+  function fadeArcs() {
+    if (!globe) return;
+    const g = globe;
+    root.classList.remove('has-arcs');
+    gsap.to(g, { arcOpacity: 0, duration: reduced ? 0 : 0.8, ease: 'power1.out', onComplete: () => g.clearArcs() });
+  }
+
+  async function playJourney() {
+    if (!globe || journey || busy || mode !== 'globe' || journeyStops.length < 2) return;
+    const g = globe;
+    const run = { cancelled: false, wake: () => {} };
+    journey = run;
+    gsap.killTweensOf(g, 'arcOpacity');
+    g.clearArcs();
+    root.classList.add('has-arcs');
+    setJourneyUi(true);
+    tip.classList.remove('is-visible');
+    cued = false;
+
+    /** Wait, but wake up early if the journey is stopped. */
+    const wait = (sec: number) =>
+      new Promise<void>((done) => {
+        const t = window.setTimeout(done, sec * 1000);
+        run.wake = () => { clearTimeout(t); done(); };
+      });
+    const tween = (target: object, vars: gsap.TweenVars) =>
+      new Promise<void>((done) => {
+        const tw = gsap.to(target, { ...vars, onComplete: () => done() });
+        run.wake = () => { tw.kill(); done(); };
+      });
+
+    // Take over from any camera move still running (e.g. the opening spin).
+    gsap.killTweensOf(g.view, 'lat,lng,zoom');
+    // Start from the Earth.
+    if (g.onMoon) await flyToBody(journeyStops[0]);
+    if (run.cancelled) return;
+    g.halt();
+    g.setFlying(true);
+
+    const first = journeyStops[0];
+    select(first, { fly: false });
+    showCaption(0);
+    const z0 = g.zoomToSeparate(first);
+    const t0 = g.targetFor(first, z0);
+    await tween(g.view, { lat: t0.lat, lng: t0.lng, zoom: z0, duration: reduced ? 0 : 1.6, ease: 'power3.inOut' });
+    if (run.cancelled) return;
+    await wait(reduced ? 2.4 : 1.4);
+
+    for (let k = 1; k < journeyStops.length && !run.cancelled; k++) {
+      const a = journeyStops[k - 1];
+      const b = journeyStops[k];
+      const draw = g.addArc(a, b);
+      const A = latLngToVec3(data[a].lat, data[a].lng, 1);
+      const B = latLngToVec3(data[b].lat, data[b].lng, 1);
+      const ang = A.angleTo(B);
+      const zA = g.view.zoom;
+      const zB = g.zoomToSeparate(b);
+      // Long flights pull the camera back so the whole arc stays in view.
+      const lift = clamp(ang * 0.32, 0, 0.42);
+      const dur = reduced ? 0 : clamp(1.3 + ang * 1.3, 1.7, 3.9);
+      const state = { p: 0 };
+      const dir = new Vector3();
+      if (!reduced) showCaption(k);
+      await tween(state, {
+        p: 1,
+        duration: dur,
+        ease: 'power2.inOut',
+        onUpdate: () => {
+          const p = state.p;
+          draw(Math.min(1, p * 1.04));
+          const zoom = clamp(lerp(zA, zB, p) + lift * Math.sin(Math.PI * p), g.minZoom(), 1.55);
+          const ll = vecToLatLng(slerpDir(A, B, p, dir));
+          const v = g.view;
+          v.zoom = zoom;
+          v.lat = clamp(ll.lat - 8 * clamp(zoom, 0, 1) ** 2, -70, 70);
+          v.lng = v.lng + angleDelta(v.lng, ll.lng);
+        },
+      });
+      if (run.cancelled) return;
+      if (reduced) {
+        draw(1);
+        showCaption(k);
+      }
+      select(b, { fly: false });
+      await wait(reduced ? 2.4 : 1.3);
+    }
+    if (run.cancelled) return;
+
+    // Finished: step back to see the whole route, then hand control back.
+    journey = null;
+    setJourneyUi(false);
+    announcer.textContent = `Journey complete: ${journeyStops.length} places. ${data[journeyStops[journeyStops.length - 1]].name} selected.`;
+    if (!reduced) {
+      const last = journeyStops[journeyStops.length - 1];
+      const t = g.targetFor(last, 1.25);
+      gsap.to(g.view, {
+        lat: t.lat, lng: t.lng, zoom: 1.25, duration: 2.2, ease: 'power2.inOut',
+        onComplete: () => { g.setFlying(false); cued = true; },
+      });
+    } else {
+      g.setFlying(false);
+      cued = true;
+    }
+  }
+
+  for (const b of journeyBtns) {
+    b.addEventListener('click', () => {
+      if (journey) stopJourney();
+      else playJourney();
+    });
+  }
 
   // ------------------------------------------------------------ gallery loading
   const fragments = new Map<string, Promise<HTMLElement>>();
@@ -574,6 +773,7 @@ export function startApp() {
 
     const loc = t.closest<HTMLAnchorElement>('a[data-location]');
     if (loc) {
+      stopJourney();
       const i = indexOf(loc.dataset.location!);
       if (i < 0) return;
       e.preventDefault();
@@ -611,7 +811,8 @@ export function startApp() {
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && mode === 'gallery' && !lightbox.isOpen) leave();
+    if (e.key === 'Escape' && journey) stopJourney();
+    else if (e.key === 'Escape' && mode === 'gallery' && !lightbox.isOpen) leave();
   });
 
   history.replaceState(initialSlug ? { view: 'gallery', slug: initialSlug } : { view: 'globe' }, '');

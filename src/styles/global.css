@@ -555,6 +555,119 @@ body:has(.app.is-gallery) .site-header::before {
   opacity: 0.55;
 }
 
+/* "Play my journey" */
+.journey-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 17px 9px 12px;
+  border: 1px solid var(--accent-soft);
+  border-radius: 999px;
+  background: rgba(4, 12, 12, 0.5);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+  transition:
+    border-color 0.3s,
+    background-color 0.3s,
+    color 0.3s;
+}
+.journey-btn svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  fill: currentColor;
+}
+.journey-btn:hover {
+  border-color: var(--accent);
+  background: rgba(62, 240, 177, 0.08);
+}
+.journey-stop,
+.journey-btn[aria-pressed='true'] .journey-play {
+  display: none;
+}
+.journey-btn[aria-pressed='true'] .journey-stop {
+  display: block;
+}
+/* Centred under the globe on wide screens */
+.home-footer .journey-btn {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+}
+
+/* Caption while the journey plays: "03 / 15 · Utrecht · February 2021" */
+.journey-caption {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--header-h) + 6px);
+  z-index: 55;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  padding: 9px 18px;
+  border: 1px solid var(--accent-soft);
+  border-radius: 999px;
+  background: rgba(4, 12, 12, 0.66);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+  translate: -50% -6px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.5s var(--ease-out),
+    translate 0.5s var(--ease-out),
+    visibility 0s linear 0.5s;
+}
+.is-journey:not(.is-travelling):not(.is-gallery) .journey-caption {
+  opacity: 1;
+  visibility: visible;
+  translate: -50% 0;
+  transition:
+    opacity 0.5s var(--ease-out),
+    translate 0.5s var(--ease-out),
+    visibility 0s;
+}
+.journey-count {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+.journey-place {
+  color: var(--ink);
+  font-weight: 600;
+}
+.journey-date {
+  color: var(--ink-2);
+}
+.journey-place::before,
+.journey-date::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  margin: 0 14px 0 0;
+  border-radius: 50%;
+  background: var(--ink-3);
+  vertical-align: middle;
+}
+.journey-date:empty {
+  display: none;
+}
+.is-journey .hint {
+  opacity: 0.35;
+}
+
 /* Shown while the camera is at the Moon */
 .back-earth {
   position: absolute;
@@ -1608,7 +1721,43 @@ body:has(.app.is-gallery) .site-header::before {
     display: none;
   }
   .totals {
+    gap: 10px;
     font-size: 10px;
+    letter-spacing: 0.16em;
+    white-space: nowrap;
+  }
+  .totals-rule {
+    display: none;
+  }
+  .home-footer .journey-btn {
+    position: static;
+    translate: none;
+    padding: 6px 13px 6px 10px;
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+    gap: 8px;
+  }
+  .journey-btn svg {
+    width: 13px;
+    height: 13px;
+  }
+  .journey-caption {
+    top: calc(var(--header-h) + 4px);
+    gap: 10px;
+    padding: 7px 14px;
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+  }
+  .journey-place::before,
+  .journey-date::before {
+    margin-right: 10px;
+  }
+  /* The caption takes the headline's place while the journey plays. */
+  .hero > :not(.hint) {
+    transition: opacity 0.4s;
+  }
+  .is-journey .hero > :not(.hint) {
+    opacity: 0;
   }
 
   .g-hero-inner {
@@ -1685,6 +1834,7 @@ body:has(.app.is-gallery) .site-header::before {
   .hero-rule {
     margin: 18px 0 20px;
   }
+
   .panel {
     top: 14vh;
   }

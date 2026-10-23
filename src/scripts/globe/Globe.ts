@@ -4,7 +4,7 @@ import {
   BufferAttribute,
   BufferGeometry,
   Group,
-  LineLoop,
+  Line,
   LineSegments,
   LinearMipmapLinearFilter,
   Mesh,
@@ -23,7 +23,9 @@ import {
   Vector3,
   WebGLRenderer,
 } from 'three';
-import { DEG, angleDelta, clamp, graticule, latLngToVec3, lerp, loadLines } from './geo';
+import { DEG, angleDelta, clamp, graticule, latLngToVec3, lerp, loadLines, slerpDir } from './geo';
+import { subsolarPoint } from './sun';
+import { IssTracker, type IssState } from './iss';
 import * as S from './shaders';
 
 export interface GlobePoint {
@@ -38,6 +40,8 @@ export interface GlobePoint {
 
 /** Marker index used for "the Moon itself" in hover callbacks. */
 export const MOON_HOVER = -2;
+/** Hover index for the live ISS. */
+export const ISS_HOVER = -3;
 
 export interface GlobeOptions {
   base: string;
@@ -48,6 +52,8 @@ export interface GlobeOptions {
   onInteract?: () => void;
   /** The small Moon was clicked while looking at the Earth. */
   onMoon?: () => void;
+  /** Pointer over (or tap on) the live ISS. */
+  onIss?: (over: boolean, x: number, y: number, tapped?: boolean) => void;
   /** Several markers overlap where the visitor tapped; app zooms in to separate them. */
   onCluster?: (indices: number[]) => void;
   /**
@@ -128,8 +134,21 @@ export class Globe {
   private bodyR = 1;
   private starMat!: ShaderMaterial;
   private cloudMat!: ShaderMaterial;
-  private orbit = new Group();
-  private orbitDots!: Points;
+  private sunDir = new Vector3(1, 0, 0);
+  private sunUpdated = -1;
+  private iss = new IssTracker();
+  private issState: IssState | null = null;
+  private issDot!: Points;
+  private issTrack!: Line;
+  private issTrackMat!: ShaderMaterial;
+  private issTrackUpdated = -1;
+  private issScreen = { x: -999, y: -999, visible: false };
+  /** Journey arcs drawn by playJourney (see addArc). */
+  private arcs: { line: Line; n: number }[] = [];
+  private arcMat!: ShaderMaterial;
+  private arcHead!: Points;
+  /** 0–1, fades all journey arcs together. */
+  arcOpacity = 1;
   private lineMats: ShaderMaterial[] = [];
   private w = 1;
   private h = 1;
@@ -192,10 +211,12 @@ export class Globe {
       load(`${this.opts.base}textures/moon-2048.jpg`),
     ]);
 
+    this.updateSun();
     this.buildEarth(mask, detail, size);
     this.buildLines(borders, coast);
     this.buildStars();
-    this.buildOrbit();
+    this.buildIss();
+    this.buildArcs();
     this.buildClouds();
     this.buildMoon(moonTex);
     this.setPoints(points);
@@ -215,7 +236,7 @@ export class Globe {
         uMask: { value: mask },
         uDetail: { value: detail },
         uTexel: { value: [1.5 / size, 1.5 / (size / 2)] },
-        uLightDir: { value: new Vector3(-0.5, 0.6, 0.6).normalize() },
+        uSunDir: { value: this.sunDir },
         uAccent: { value: ACCENT },
         uIntro: { value: 0 },
       },
@@ -311,48 +332,137 @@ export class Globe {
     this.scene.add(stars);
   }
 
-  /** Decorative orbit ring. It is attached to the camera so it always frames the globe the same way. */
-  private buildOrbit() {
-    const n = 360;
-    const pos = new Float32Array(n * 3);
-    const t = new Float32Array(n);
-    for (let i = 0; i < n; i++) {
-      const a = (i / n) * Math.PI * 2;
-      pos.set([Math.cos(a) * 1.5, Math.sin(a) * 1.5, 0], i * 3);
-      t[i] = i / n;
-    }
-    const g = new BufferGeometry();
-    g.setAttribute('position', new BufferAttribute(pos, 3));
-    g.setAttribute('aT', new BufferAttribute(t, 1));
-    const mat = new ShaderMaterial({
-      vertexShader: S.ringVertex,
-      fragmentShader: S.ringFragment,
-      uniforms: { uColor: { value: ACCENT }, uOpacity: { value: 0.5 } },
+  /**
+   * The live International Space Station: a bright dot at its real position and its
+   * path for half an orbit either side. Altitude is drawn 2.5x higher than reality
+   * (420 km would hug the globe too closely to see); latitude and longitude are exact.
+   */
+  private buildIss() {
+    this.issTrackMat = new ShaderMaterial({
+      vertexShader: S.trackVertex,
+      fragmentShader: S.trackFragment,
+      uniforms: { uColor: { value: ACCENT }, uOpacity: { value: 0 } },
       transparent: true,
       blending: AdditiveBlending,
       depthWrite: false,
     });
-    (mat as any).baseOpacity = 0.5;
-    this.lineMats.push(mat);
-    const ring = new LineLoop(g, mat);
-    ring.rotation.set(1.22, 0.0, -0.32);
-    ring.frustumCulled = false;
-    const dotsGeo = new BufferGeometry();
-    dotsGeo.setAttribute('position', new BufferAttribute(new Float32Array(6), 3));
-    dotsGeo.setAttribute('aIndex', new BufferAttribute(new Float32Array([100, 101]), 1));
-    this.orbitDots = new Points(dotsGeo, this.makeMarkerMaterial(5.5));
-    this.orbitDots.rotation.copy(ring.rotation);
-    this.orbitDots.frustumCulled = false;
-    this.orbit.add(ring, this.orbitDots);
-    // The ring belongs to the Earth: it is fixed in space around it (so it turns with the globe
-    // and stays behind when the camera flies to the Moon). Its tilt is chosen so that, seen from
-    // the usual opening view, it frames the globe like the reference design.
-    const ref = new PerspectiveCamera();
-    latLngToVec3(34, 11, 5, ref.position);
-    ref.up.set(0, 1, 0);
-    ref.lookAt(0, 0, 0);
-    this.orbit.quaternion.copy(ref.quaternion);
-    this.scene.add(this.orbit);
+    this.issTrack = new Line(new BufferGeometry(), this.issTrackMat);
+    this.issTrack.frustumCulled = false;
+    this.scene.add(this.issTrack);
+    const g = new BufferGeometry();
+    g.setAttribute('position', new BufferAttribute(new Float32Array(3), 3));
+    g.setAttribute('aIndex', new BufferAttribute(new Float32Array([200]), 1));
+    const issMat = this.makeMarkerMaterial(8);
+    issMat.uniforms.uColor.value = hexVec('#f4f1e8');
+    this.issDot = new Points(g, issMat);
+    this.issDot.frustumCulled = false;
+    this.issDot.renderOrder = 3;
+    this.scene.add(this.issDot);
+    this.iss.load().then((ok) => {
+      if (!ok) console.info('ISS orbit data unavailable; tracker hidden.');
+    });
+  }
+
+  private static ISS_VIS = 2.5;
+
+  private issVec(s: IssState, out = new Vector3()) {
+    return latLngToVec3(s.lat, s.lng, 1 + (s.heightKm / 6371) * Globe.ISS_VIS, out);
+  }
+
+  private updateIss(nowMs: number) {
+    if (!this.iss.ready) return;
+    this.issState = this.iss.at(new Date(nowMs));
+    if (!this.issState) return;
+    const p = this.issVec(this.issState);
+    const attr = this.issDot.geometry.getAttribute('position') as BufferAttribute;
+    attr.setXYZ(0, p.x, p.y, p.z);
+    attr.needsUpdate = true;
+    // Rebuild the path every 20 s: half an orbit behind and ahead (one orbit is ~93 minutes).
+    if (nowMs - this.issTrackUpdated > 20000) {
+      this.issTrackUpdated = nowMs;
+      const n = 160;
+      const half = 46.5 * 60000;
+      const pos = new Float32Array(n * 3);
+      const tt = new Float32Array(n);
+      const v = new Vector3();
+      for (let k = 0; k < n; k++) {
+        const s = this.iss.at(new Date(nowMs - half + (2 * half * k) / (n - 1)));
+        if (s) this.issVec(s, v);
+        pos.set([v.x, v.y, v.z], k * 3);
+        tt[k] = k / (n - 1);
+      }
+      const geo = this.issTrack.geometry;
+      geo.setAttribute('position', new BufferAttribute(pos, 3));
+      geo.setAttribute('aT', new BufferAttribute(tt, 1));
+    }
+  }
+
+  /** Live ISS details for the tooltip (null until the orbit data has loaded). */
+  issInfo() {
+    return this.issState ? { ...this.issState, screen: this.issScreen } : null;
+  }
+
+  private buildArcs() {
+    this.arcMat = new ShaderMaterial({
+      vertexShader: S.lineVertex,
+      fragmentShader: S.lineFragment,
+      uniforms: { uColor: { value: ACCENT }, uOpacity: { value: 0.85 } },
+      transparent: true,
+      blending: AdditiveBlending,
+      depthWrite: false,
+    });
+    const g = new BufferGeometry();
+    g.setAttribute('position', new BufferAttribute(new Float32Array(3), 3));
+    g.setAttribute('aIndex', new BufferAttribute(new Float32Array([201]), 1));
+    this.arcHead = new Points(g, this.makeMarkerMaterial(9));
+    this.arcHead.frustumCulled = false;
+    this.arcHead.visible = false;
+    this.scene.add(this.arcHead);
+  }
+
+  /**
+   * Draw a flight arc from location a to location b. Returns a function that sets
+   * how much of it is drawn (0–1); the glowing head follows the leading end.
+   */
+  addArc(a: number, b: number): (progress: number) => void {
+    const A = latLngToVec3(this.points[a].lat, this.points[a].lng, 1);
+    const B = latLngToVec3(this.points[b].lat, this.points[b].lng, 1);
+    const ang = A.angleTo(B);
+    const h = 0.03 + 0.32 * (ang / Math.PI); // longer flights arc higher
+    const n = Math.max(24, Math.ceil(ang * 90));
+    const pos = new Float32Array((n + 1) * 3);
+    const v = new Vector3();
+    for (let k = 0; k <= n; k++) {
+      const t = k / n;
+      slerpDir(A, B, t, v).normalize().multiplyScalar(1.006 + h * Math.sin(Math.PI * t));
+      pos.set([v.x, v.y, v.z], k * 3);
+    }
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(pos, 3));
+    geo.setDrawRange(0, 0);
+    const line = new Line(geo, this.arcMat);
+    line.frustumCulled = false;
+    line.renderOrder = 1;
+    this.scene.add(line);
+    this.arcs.push({ line, n });
+    const head = this.arcHead.geometry.getAttribute('position') as BufferAttribute;
+    return (p: number) => {
+      const c = Math.round(clamp(p, 0, 1) * n);
+      geo.setDrawRange(0, c + 1);
+      head.setXYZ(0, pos[c * 3], pos[c * 3 + 1], pos[c * 3 + 2]);
+      head.needsUpdate = true;
+      this.arcHead.visible = p > 0 && p < 1;
+    };
+  }
+
+  clearArcs() {
+    for (const a of this.arcs) {
+      this.scene.remove(a.line);
+      a.line.geometry.dispose();
+    }
+    this.arcs = [];
+    this.arcHead.visible = false;
+    this.arcOpacity = 1;
   }
 
   private makeMarkerMaterial(size: number) {
@@ -464,7 +574,7 @@ export class Globe {
   }
 
   resize() {
-    if (!this.orbitDots) return; // not set up yet; init() calls resize() when ready
+    if (!this.issDot) return; // not set up yet; init() calls resize() when ready
     const r = this.stage.getBoundingClientRect();
     this.w = Math.max(1, r.width);
     this.h = Math.max(1, r.height);
@@ -491,7 +601,7 @@ export class Globe {
     const alpha = Math.atan((radius / (this.h / 2)) * tanHalf);
     this.baseDist = 1 / Math.sin(alpha);
 
-    [this.markerMat, this.moonMarkerMat, this.starMat, this.orbitDots.material as ShaderMaterial].forEach(
+    [this.markerMat, this.moonMarkerMat, this.starMat, this.issDot.material as ShaderMaterial, this.arcHead.material as ShaderMaterial].forEach(
       (m) => (m.uniforms.uPixelRatio.value = pr),
     );
     this.cloudMat.uniforms.uAspect.value = this.w / this.h;
@@ -573,6 +683,13 @@ export class Globe {
     this.raf = requestAnimationFrame(tick);
   }
 
+  /** Point the light at where the Sun really is (refreshed every minute). */
+  private updateSun(nowMs = Date.now()) {
+    const s = subsolarPoint(new Date(nowMs));
+    latLngToVec3(s.lat, s.lng, 1, this.sunDir);
+    this.sunUpdated = nowMs;
+  }
+
   stop() {
     this.running = false;
     cancelAnimationFrame(this.raf);
@@ -580,6 +697,9 @@ export class Globe {
 
   private step(dt: number, now: number) {
     this.time += dt;
+    const wall = Date.now();
+    if (wall - this.sunUpdated > 60000) this.updateSun(wall);
+    this.updateIss(wall);
     const v = this.view;
     if (this.interactive && !this.dragging) {
       // Inertia
@@ -614,23 +734,22 @@ export class Globe {
     this.moonMarkerMat.uniforms.uHover.value = this.hovered;
     this.moonMarkerMat.uniforms.uVisible.value = fadeOrbit * clamp((f - 0.6) / 0.4, 0, 1);
     for (const m of this.lineMats) m.uniforms.uOpacity.value = (m as any).baseOpacity * intro * (1 - this.view.descend * 0.6);
-    const ringZoom = clamp((this.view.zoom - 0.45) / 0.35, 0, 1);
-    this.lineMats[this.lineMats.length - 1].uniforms.uOpacity.value = 0.5 * fadeOrbit * ringZoom;
+    // ISS: fades out when zoomed right in (the camera would be inside its path) and during a descent.
+    const issZoom = clamp((this.view.zoom - 0.45) / 0.35, 0, 1) * (this.issState ? 1 : 0);
+    this.issTrackMat.uniforms.uOpacity.value = 0.55 * fadeOrbit * issZoom;
+    const issMat = this.issDot.material as ShaderMaterial;
+    issMat.uniforms.uVisible.value = fadeOrbit * issZoom;
+    issMat.uniforms.uTime.value = t;
+    issMat.uniforms.uHover.value = this.hovered === ISS_HOVER ? 200 : -1;
+    this.arcMat.uniforms.uOpacity.value = 0.85 * this.arcOpacity * fadeOrbit;
+    const headMat = this.arcHead.material as ShaderMaterial;
+    headMat.uniforms.uVisible.value = fadeOrbit * this.arcOpacity;
+    headMat.uniforms.uTime.value = t;
     this.markerMat.uniforms.uTime.value = t;
     this.markerMat.uniforms.uSelected.value = this.selected;
     this.markerMat.uniforms.uHover.value = this.hovered;
     this.markerMat.uniforms.uVisible.value = fadeOrbit * clamp(1 - f / 0.4, 0, 1);
     this.starMat.uniforms.uTime.value = t;
-
-    // Orbiting dots on the decorative ring
-    const dots = this.orbitDots.geometry.getAttribute('position') as BufferAttribute;
-    const a1 = t * 0.12;
-    const a2 = t * 0.12 + 2.4;
-    dots.setXYZ(0, Math.cos(a1) * 1.5, Math.sin(a1) * 1.5, 0);
-    dots.setXYZ(1, Math.cos(a2) * 1.5, Math.sin(a2) * 1.5, 0);
-    dots.needsUpdate = true;
-    (this.orbitDots.material as ShaderMaterial).uniforms.uVisible.value = fadeOrbit * 0.8 * ringZoom;
-    (this.orbitDots.material as ShaderMaterial).uniforms.uTime.value = t;
 
     this.renderer.clear();
     this.renderer.render(this.scene, this.camera);
@@ -665,6 +784,22 @@ export class Globe {
       this.screen[i].y = (-s.y * 0.5 + 0.5) * this.h;
       this.screen[i].facing = camDir.dot(n);
     }
+    // The ISS on screen (for its tooltip): hidden when the Earth is in the way.
+    if (this.issState) {
+      const a = this.issDot.geometry.getAttribute('position') as BufferAttribute;
+      p.set(a.getX(0), a.getY(0), a.getZ(0));
+      const C = this.camera.position;
+      const D = n.copy(p).sub(C);
+      const len = D.length();
+      D.divideScalar(len);
+      const b = C.dot(D);
+      const disc = b * b - (C.lengthSq() - 1);
+      const hidden = disc > 0 && -b - Math.sqrt(disc) < len;
+      const s = p.clone().project(this.camera);
+      this.issScreen.x = (s.x * 0.5 + 0.5) * this.w;
+      this.issScreen.y = (-s.y * 0.5 + 0.5) * this.h;
+      this.issScreen.visible = !hidden && this.view.body < 0.05 && this.view.zoom > 0.6 && this.view.descend < 0.05;
+    } else this.issScreen.visible = false;
     // The Moon's own outline on screen (for clicking it).
     const c = this.moonGroup.position.clone().project(this.camera);
     const edge = this.moonGroup.position
@@ -803,6 +938,9 @@ export class Globe {
     // The selected location has arrows around it; treat that whole area as its tap target.
     const sel = this.screen[this.selected];
     if (best < 0 && sel && this.pickable(this.selected) && (sel.x - x) ** 2 + (sel.y - y) ** 2 < 46 * 46) best = this.selected;
+    // The live ISS.
+    const iss = this.issScreen;
+    if (best < 0 && iss.visible && (iss.x - x) ** 2 + (iss.y - y) ** 2 < 16 * 16) best = ISS_HOVER;
     // The small Moon, while looking at the Earth.
     if (best < 0 && !this.onMoon && this.view.body < 0.05) {
       const m = this.moonScreen;
@@ -863,6 +1001,7 @@ export class Globe {
             el.style.cursor = i >= 0 ? 'pointer' : '';
           }
           this.opts.onHover?.(i >= 0 ? i : null, x, y);
+          this.opts.onIss?.(i === ISS_HOVER, x, y);
         }
         return;
       }
@@ -907,6 +1046,7 @@ export class Globe {
           const i = this.pick(x, y);
           if (group.length) this.opts.onCluster?.(group);
           else if (i === MOON_HOVER) this.opts.onMoon?.();
+          else if (i === ISS_HOVER) this.opts.onIss?.(true, x, y, true);
           else if (i >= 0) {
             if (i === this.selected) this.opts.onActivate?.(i);
             else this.opts.onPick?.(i);
@@ -924,6 +1064,7 @@ export class Globe {
         el.style.cursor = '';
         this.opts.onHover?.(null, 0, 0);
       }
+      this.opts.onIss?.(false, 0, 0);
     });
 
     el.addEventListener(
