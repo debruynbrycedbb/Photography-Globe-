@@ -277,8 +277,9 @@ export function startApp() {
           flyToBody(i);
           return;
         }
-        // Zoom in when this location's marker would overlap a neighbour's.
-        const zoom = globe.zoomToSeparate(i);
+        // Zoom in when this location's marker would overlap a neighbour's, but never zoom
+        // back out: if the visitor has already zoomed in closer, keep their zoom.
+        const zoom = Math.min(globe.view.zoom, globe.zoomToSeparate(i));
         const t = globe.targetFor(i, zoom);
         globe.halt();
         globe.setFlying(true);
