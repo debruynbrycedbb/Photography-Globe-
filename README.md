@@ -125,7 +125,7 @@ The Moon's surface is drawn by `scripts/build-moon-texture.py` (procedural, no t
 2. In the repository: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 3. Every push to `main` now builds and publishes the site automatically (the workflow is in `.github/workflows/deploy.yml`). The first build takes a couple of minutes; later builds reuse resized images.
 
-The workflow sets the site address and base path for you. That works for both `username.github.io/repo-name/` and a custom domain.
+The site is published at **https://bdbphotography.site**. The domain is set in two places: the repo's **Settings → Pages → Custom domain**, and the file `public/CNAME`, which the deploy workflow reads so every link is built for the domain. To go back to the `github.io` address, delete `public/CNAME` and remove the custom domain in Settings.
 
 **Limits to know about** (GitHub's published limits):
 
