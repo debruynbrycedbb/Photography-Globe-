@@ -34,7 +34,38 @@ function hexToVec(h: string) {
   return new Vector3(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
 }
 
+/**
+ * Size each gallery title so the whole name fits on one line. Names that would
+ * need to go smaller than MIN_PX wrap between words instead (never mid-word).
+ */
+const MIN_PX = 22;
+function fitTitles(scope: ParentNode = document) {
+  for (const el of scope.querySelectorAll<HTMLElement>('[data-fit]')) {
+    el.style.fontSize = '';
+    el.classList.remove('is-wrapped');
+    const room = el.clientWidth;
+    if (!room) continue;
+    const size = parseFloat(getComputedStyle(el).fontSize);
+    const need = el.scrollWidth;
+    if (need <= room) continue;
+    const fitted = Math.floor(size * (room / need) * 0.99 * 10) / 10;
+    if (fitted >= MIN_PX) el.style.fontSize = `${fitted}px`;
+    else {
+      el.style.fontSize = `${MIN_PX}px`;
+      el.classList.add('is-wrapped');
+    }
+  }
+}
+
 export function startApp() {
+  fitTitles();
+  document.fonts?.ready.then(() => fitTitles());
+  let fitTimer = 0;
+  window.addEventListener('resize', () => {
+    clearTimeout(fitTimer);
+    fitTimer = window.setTimeout(() => fitTitles(), 120);
+  });
+
   const root = $('[data-app]');
   if (!root) return;
   const data: Loc[] = JSON.parse($('#locations-data').textContent || '[]');
@@ -393,6 +424,7 @@ export function startApp() {
       // Insert the gallery (hidden) as soon as it arrives so the hero image starts loading mid-flight.
       const insert = fragment.then((a) => {
         layer.replaceChildren(a);
+        fitTitles(a);
         a.classList.add('is-arriving');
         return a;
       });

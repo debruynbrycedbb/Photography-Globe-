@@ -937,15 +937,26 @@ body:has(.app.is-gallery) .site-header::before {
   min-width: 0;
 }
 .g-title {
+  /* Space the title can use: the hero width, minus the stats column on wide screens. */
+  --title-room: calc(100vw - 2 * var(--gutter) - 328px);
   margin: 22px 0 0;
   font-family: var(--font-display);
   font-variation-settings: 'wdth' 125;
   font-weight: 800;
-  font-size: clamp(44px, 7.2vw, 124px);
+  /* One line: shrink long names to fit (refined exactly by script once fonts load). */
+  font-size: min(clamp(44px, 7.2vw, 124px), calc(var(--title-room) / (var(--chars, 8) * 0.86)));
   line-height: 0.94;
   letter-spacing: -0.005em;
   text-transform: uppercase;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+}
+.g-title.is-wrapped {
+  white-space: normal;
+}
+@media (max-width: 899px) {
+  .g-title {
+    --title-room: calc(100vw - 2 * var(--gutter));
+  }
 }
 .g-place {
   margin: 18px 0 0;

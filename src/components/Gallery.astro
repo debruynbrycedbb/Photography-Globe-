@@ -89,7 +89,7 @@ const photos = await Promise.all(
     <div class="g-hero-inner" data-hero-text>
       <div class="g-hero-text">
         <p class="tag">{d.country}</p>
-        <h1 class="g-title" id={`title-${loc.id}`}>{d.name}</h1>
+        <h1 class="g-title" id={`title-${loc.id}`} data-fit style={`--chars:${Math.max(d.name.length, 4)}`}>{d.name}</h1>
         {place && <p class="g-place">{place}</p>}
         {visits.length > 0 && (
           <ul class="g-visits" aria-label="Visit dates">
