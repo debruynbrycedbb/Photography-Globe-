@@ -354,3 +354,104 @@ export const cloudFragment = /* glsl */ `
     gl_FragColor = vec4(col / max(acc, 0.001) * mix(0.8, 1.0, vign), a);
   }
 `;
+
+// The Moon's version of the descent: a dive into a crater instead of through clouds.
+// Craters at several sizes, each layer fading in only once it's big enough on screen,
+// lit from the upper left like the Moon itself, ending in the shadow of the crater floor.
+export const craterFragment = /* glsl */ `
+  uniform float uTravel;
+  uniform float uOpacity;
+  uniform float uAspect;
+  uniform float uRes;
+  varying vec2 vUv;
+
+  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  vec2 hash2(vec2 p) {
+    return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453);
+  }
+  float noise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
+  }
+  float fbm(vec2 p) {
+    float v = 0.0;
+    float a = 0.5;
+    for (int i = 0; i < 4; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; }
+    return v;
+  }
+
+  // One crater's height, r in units of its radius: a shallow bowl with a flattish floor,
+  // a soft raised rim and a little ejecta beyond it.
+  float crater(float r) {
+    float bowl = r < 1.0 ? max(r * r - 1.0, -0.62) * 0.55 : 0.0;
+    float rim = 0.16 * exp(-pow((r - 1.0) / 0.2, 2.0));
+    float ejecta = r > 1.0 ? 0.05 * exp(-(r - 1.0) * 2.5) : 0.05;
+    return bowl + rim + ejecta;
+  }
+
+  // A scattering of craters of different sizes, one possible per cell.
+  float field(vec2 p, float density) {
+    vec2 c = floor(p);
+    vec2 f = fract(p);
+    float h = 0.0;
+    for (int j = -1; j <= 1; j++) {
+      for (int i = -1; i <= 1; i++) {
+        vec2 g = vec2(float(i), float(j));
+        float pick = hash(c + g + 17.3);
+        if (pick > density) continue;
+        float R = mix(0.1, 0.48, pow(fract(pick * 7.13), 2.2)); // mostly small, a few large
+        float r = length(g + hash2(c + g) - f) / R;
+        if (r < 2.2) h += crater(r) * R;
+      }
+    }
+    return h;
+  }
+
+  // Each layer of detail fades in only once its craters are big enough on screen not to shimmer.
+  float octave(float freq, float px) {
+    return smoothstep(3.0, 12.0, (1.0 / freq) / px);
+  }
+
+  float height(vec2 q, float px) {
+    float h = crater(length(q)) * 1.3;                 // the crater we dive into (radius 1)
+    h += (fbm(q * 0.9 + 4.0) - 0.5) * 0.25;           // gentle rolling ground
+    float w;
+    w = octave(3.0, px);   if (w > 0.0) h += field(q * 3.0 + 0.7, 0.32) / 3.0 * w;
+    w = octave(9.0, px);   if (w > 0.0) h += field(q * 9.0 + 3.7, 0.38) / 9.0 * w;
+    w = octave(27.0, px);  if (w > 0.0) h += field(q * 27.0 + 8.1, 0.42) / 27.0 * w;
+    w = octave(81.0, px);  if (w > 0.0) h += field(q * 81.0 + 1.3, 0.45) / 81.0 * w;
+    w = octave(243.0, px); if (w > 0.0) h += field(q * 243.0 + 5.9, 0.45) / 243.0 * w;
+    w = octave(120.0, px); if (w > 0.0) h += (fbm(q * 120.0) - 0.5) * 0.0035 * w;
+    return h;
+  }
+
+  void main() {
+    vec2 uv = (vUv - 0.5) * vec2(uAspect, 1.0);
+    // A slow turn while diving, like the camera settling.
+    float ang = uTravel * 0.22;
+    uv = mat2(cos(ang), -sin(ang), sin(ang), cos(ang)) * uv;
+    float scale = exp(uTravel * 2.6);
+    float span = 2.6 / scale;                          // world units across the screen height
+    vec2 q = uv * span;
+    float px = span / uRes;
+
+    // Surface normal from the height field's screen-space slope, lit low from the upper left
+    // like the Moon itself, so the relief throws long shadows.
+    float h = height(q, px);
+    vec3 n = normalize(vec3(-dFdx(h) / px, -dFdy(h) / px, 1.0));
+    vec3 L = normalize(vec3(-0.62, 0.52, 0.42));
+    float diff = max(dot(n, L), 0.0);
+
+    // Darker plains and brighter highlands, with fine speckle once it's large enough to see.
+    float plains = smoothstep(0.38, 0.62, fbm(q * 0.7 + 11.0));
+    float albedo = mix(0.58, 0.36, plains) * mix(0.95, 1.04, fbm(q * 18.0 + 9.0));
+    vec3 col = vec3(1.0, 0.985, 0.96) * albedo * (0.03 + 1.25 * diff);
+
+    // Into the shadow of the crater floor at the end, so the dark gallery backdrop takes over.
+    col *= 1.0 - 0.88 * smoothstep(1.0, 1.55, uTravel);
+    col *= mix(0.5, 1.0, smoothstep(1.2, 0.2, length(uv)));
+    gl_FragColor = vec4(col, uOpacity);
+  }
+`;

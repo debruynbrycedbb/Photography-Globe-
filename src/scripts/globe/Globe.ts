@@ -97,6 +97,8 @@ export interface CloudState {
   opacity: number;
   travel: number;
   tint: Vector3;
+  /** Which descent effect to draw: 0 = clouds (Earth), 1 = a dive into a crater (Moon). */
+  surface: number;
 }
 
 export class Globe {
@@ -106,7 +108,7 @@ export class Globe {
    * 1 = the Moon is fixed in space (while the camera flies to or around it).
    */
   moonLock = 0;
-  readonly clouds: CloudState = { opacity: 0, travel: 0, tint: new Vector3(0.8, 0.85, 0.9) };
+  readonly clouds: CloudState = { opacity: 0, travel: 0, tint: new Vector3(0.8, 0.85, 0.9), surface: 0 };
   interactive = true;
   selected = -1;
   hovered = -1;
@@ -136,6 +138,9 @@ export class Globe {
   private bodyR = 1;
   private starMat!: ShaderMaterial;
   private cloudMat!: ShaderMaterial;
+  private cloudQuad!: Mesh;
+  private craterMat!: ShaderMaterial;
+  private craterQuad!: Mesh;
   private sunDir = new Vector3(1, 0, 0);
   private sunUpdated = -1;
   private iss = new IssTracker();
@@ -503,9 +508,28 @@ export class Globe {
       depthTest: false,
       depthWrite: false,
     });
-    const quad = new Mesh(new PlaneGeometry(2, 2), this.cloudMat);
-    quad.frustumCulled = false;
-    this.cloudScene.add(quad);
+    const plane = new PlaneGeometry(2, 2);
+    this.cloudQuad = new Mesh(plane, this.cloudMat);
+    this.cloudQuad.frustumCulled = false;
+    this.cloudScene.add(this.cloudQuad);
+
+    this.craterMat = new ShaderMaterial({
+      vertexShader: S.cloudVertex,
+      fragmentShader: S.craterFragment,
+      uniforms: {
+        uTravel: { value: 0 },
+        uOpacity: { value: 0 },
+        uAspect: { value: 1 },
+        uRes: { value: 1 },
+      },
+      transparent: true,
+      depthTest: false,
+      depthWrite: false,
+    });
+    this.craterQuad = new Mesh(plane, this.craterMat);
+    this.craterQuad.frustumCulled = false;
+    this.craterQuad.visible = false;
+    this.cloudScene.add(this.craterQuad);
   }
 
   private buildMoon(tex: Texture) {
@@ -619,6 +643,8 @@ export class Globe {
       (m) => (m.uniforms.uPixelRatio.value = pr),
     );
     this.cloudMat.uniforms.uAspect.value = this.w / this.h;
+    this.craterMat.uniforms.uAspect.value = this.w / this.h;
+    this.craterMat.uniforms.uRes.value = this.h * pr;
     if (!this.running) this.renderFrame();
   }
 
@@ -768,9 +794,13 @@ export class Globe {
     this.renderer.clear();
     this.renderer.render(this.scene, this.camera);
     if (this.clouds.opacity > 0.002) {
-      this.cloudMat.uniforms.uOpacity.value = this.clouds.opacity;
-      this.cloudMat.uniforms.uTravel.value = this.clouds.travel;
-      this.cloudMat.uniforms.uTime.value = t;
+      const moon = this.clouds.surface > 0.5;
+      this.cloudQuad.visible = !moon;
+      this.craterQuad.visible = moon;
+      const mat = moon ? this.craterMat : this.cloudMat;
+      mat.uniforms.uOpacity.value = this.clouds.opacity;
+      mat.uniforms.uTravel.value = this.clouds.travel;
+      if (!moon) this.cloudMat.uniforms.uTime.value = t;
       this.renderer.render(this.cloudScene, this.cloudCam);
     }
     this.projectMarkers();

@@ -590,7 +590,11 @@ export function startApp() {
     sky.style.setProperty('--sky-top', l.palette.top);
     sky.style.setProperty('--sky-mid', l.palette.mid);
     sky.style.setProperty('--sky-bottom', l.palette.bottom);
-    if (globe) globe.clouds.tint.copy(hexToVec(l.palette.mid));
+    if (globe) {
+      globe.clouds.tint.copy(hexToVec(l.palette.mid));
+      // The Moon gets a dive into a crater instead of clouds.
+      globe.clouds.surface = l.body === 'moon' ? 1 : 0;
+    }
   }
 
   // ------------------------------------------------------------ journeys
