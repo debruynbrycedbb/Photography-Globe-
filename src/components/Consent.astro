@@ -1,0 +1,91 @@
+---
+/**
+ * Analytics consent banner. Microsoft Clarity only loads after a visitor clicks "Accept".
+ * The choice is remembered in this browser for 6 months; "Cookie settings" on the
+ * Contact page (or any element with data-consent-open) shows the banner again.
+ */
+const clarityId = import.meta.env.PROD ? 'z3wzrwbw20' : ''; // no tracking in local previews
+---
+
+<div class="consent" role="region" aria-label="Analytics consent" data-consent data-clarity={clarityId} hidden>
+  <div class="consent-text">
+    <p class="consent-title">Analytics</p>
+    <p>
+      I use Microsoft Clarity to see how people explore this site, such as clicks, scrolling and anonymised session
+      recordings. It only runs if you allow it, and it uses cookies.{" "}
+      <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener">Microsoft's privacy statement<span class="visually-hidden"> (opens in a new tab)</span></a>
+    </p>
+  </div>
+  <div class="consent-actions">
+    <button class="consent-btn" type="button" data-consent-choice="denied">Decline</button>
+    <button class="consent-btn consent-btn--accept" type="button" data-consent-choice="granted">Accept</button>
+  </div>
+</div>
+
+<script>
+  const KEY = 'bdb-analytics-consent';
+  const MAX_AGE = 182 * 24 * 3600 * 1000; // ask again after about 6 months
+  const banner = document.querySelector<HTMLElement>('[data-consent]');
+  const clarityId = banner?.dataset.clarity || '';
+  const w = window as any;
+
+  function read(): 'granted' | 'denied' | null {
+    try {
+      const c = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (c && (c.v === 'granted' || c.v === 'denied') && Date.now() - c.t < MAX_AGE) return c.v;
+    } catch {}
+    return null;
+  }
+  function save(v: 'granted' | 'denied') {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ v, t: Date.now() }));
+    } catch {}
+  }
+
+  function loadClarity() {
+    if (!clarityId || w.clarity) return;
+    // Microsoft Clarity's standard snippet.
+    (function (c: any, l: Document, a: string, r: string, i: string) {
+      c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
+      const t = l.createElement(r) as HTMLScriptElement;
+      t.async = true;
+      t.src = 'https://www.clarity.ms/tag/' + i;
+      const y = l.getElementsByTagName(r)[0];
+      y.parentNode!.insertBefore(t, y);
+    })(window, document, 'clarity', 'script', clarityId);
+    // Tell Clarity the visitor agreed to analytics (this site shows no ads).
+    w.clarity('consentv2', { ad_Storage: 'denied', analytics_Storage: 'granted' });
+  }
+
+  function show() {
+    if (!banner) return;
+    banner.hidden = false;
+    requestAnimationFrame(() => requestAnimationFrame(() => banner.classList.add('is-visible')));
+  }
+  function hide() {
+    if (!banner) return;
+    banner.classList.remove('is-visible');
+    setTimeout(() => { if (!banner.classList.contains('is-visible')) banner.hidden = true; }, 400);
+  }
+
+  banner?.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-consent-choice]');
+    if (!b) return;
+    const v = b.dataset.consentChoice as 'granted' | 'denied';
+    save(v);
+    hide();
+    if (v === 'granted') loadClarity();
+    // Withdrawing consent: Clarity deletes its cookie and stops recording.
+    else if (w.clarity) w.clarity('consentv2', { ad_Storage: 'denied', analytics_Storage: 'denied' });
+  });
+  document.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('[data-consent-open]')) {
+      e.preventDefault();
+      show();
+    }
+  });
+
+  const choice = read();
+  if (choice === 'granted') loadClarity();
+  else if (!choice) setTimeout(show, 1200); // let the page settle first
+</script>
