@@ -4,118 +4,60 @@ import { site } from '../site.config';
 
 const email = site.contact.email;
 const updated = '27 October 2026';
-const cookies = [
-  { name: '_clck', who: 'This site (set by Clarity)', purpose: 'Remembers a random Clarity ID for your browser, so visits can be counted' },
-  { name: '_clsk', who: 'This site (set by Clarity)', purpose: 'Links the pages of one visit into a single session recording' },
-  { name: 'CLID', who: 'Microsoft (clarity.ms)', purpose: 'Notes when Clarity first saw this browser on any site using Clarity' },
-  { name: 'MUID', who: 'Microsoft', purpose: 'Identifies browsers visiting Microsoft sites (used by Microsoft for analytics and operations)' },
-  { name: 'ANONCHK, MR, SM', who: 'Microsoft', purpose: 'Technical cookies that manage and synchronise the MUID cookie' },
-];
 ---
 
-<Base title="Privacy & cookies" description="How this site handles your data and cookies." bodyClass="is-gallery-page">
+<Base title="Privacy" description="This site doesn't collect personal data, use cookies or track visitors." bodyClass="is-gallery-page">
   <main id="main" class="page legal">
     <header class="page-head">
       <p class="tag">Privacy</p>
-      <h1 class="page-title">Privacy &amp; cookies</h1>
+      <h1 class="page-title">Privacy</h1>
       <p class="legal-updated">Last updated {updated}</p>
     </header>
 
     <div class="prose legal-prose">
       <p>
-        This is a personal photography portfolio. It has no accounts, forms, shop or advertising. The only optional data
-        collection is usage analytics, which runs only if you agree to it.
+        This is a personal photography portfolio. It doesn't collect personal data, use cookies, or include analytics,
+        tracking or advertising. There are no accounts or forms.
       </p>
 
       <h2>Who is responsible</h2>
       <p>
-        Bryce de Bruyn is responsible for this website and for the personal data described here. Contact:
-        <a href={`mailto:${email}`}>{email}</a>.
+        Bryce de Bruyn runs this website. Contact: <a href={`mailto:${email}`}>{email}</a>.
       </p>
 
-      <h2>What is collected and why</h2>
-
-      <h3>1. Hosting</h3>
+      <h2>Hosting</h2>
       <p>
         The site is hosted on GitHub Pages, run by GitHub, Inc. (United States). Like any web server, GitHub receives
         technical information when you load a page, such as your IP address, browser and the page requested, and may
-        keep it in server logs for security and to run the service. This is needed to deliver the site (legal basis:
-        legitimate interest, GDPR art. 6(1)(f)). See
+        keep it in server logs for security and to run the service. I don't have access to these logs. This is needed to
+        deliver the site (legal basis: legitimate interest, GDPR art. 6(1)(f)). See
         <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub's privacy statement</a>.
       </p>
 
-      <h3>2. Analytics: Microsoft Clarity (only if you accept)</h3>
+      <h2>No cookies or third parties</h2>
       <p>
-        If you click <strong>Accept</strong> on the analytics banner, the site loads Microsoft Clarity to understand how
-        people use it, so I can improve it. Clarity records how you interact with the pages: mouse movements, clicks,
-        scrolling, the pages you view, how they render, and information about your device and browser. It produces
-        heatmaps and session recordings. Clarity always masks anything typed into input boxes (this site has none).
+        The site sets no cookies. Everything it needs, including fonts, photos and the live ISS orbit data, is served
+        from this site itself, so your browser doesn't contact other companies unless you follow an external link (for
+        example to YouTube or LinkedIn), where that site's own privacy policy applies.
       </p>
-      <ul>
-        <li><strong>Legal basis:</strong> your consent (GDPR art. 6(1)(a)). You can withdraw it at any time, as easily as you gave it.</li>
-        <li><strong>If you click Decline</strong> (or do nothing), Clarity is not loaded at all and sets no cookies.</li>
-        <li><strong>Who processes it:</strong> Microsoft. For visitors in the EU, Microsoft Ireland Operations Limited, which may transfer data to Microsoft Corporation in the United States under the European Commission's standard contractual clauses. Data is stored in Microsoft's Azure cloud.</li>
-        <li><strong>How long:</strong> according to Microsoft, recordings are kept for 30 days (some selected recordings up to 9 months) and heatmaps for up to 9 months.</li>
-        <li>More: <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener">Microsoft privacy statement</a> and <a href="https://learn.microsoft.com/clarity/setup-and-installation/cookie-list" target="_blank" rel="noopener">Clarity's cookie list</a>.</li>
-      </ul>
 
-      <h3>3. Emails you send me</h3>
+      <h2>Emails you send me</h2>
       <p>
         If you email me, I receive your email address and message in my email account (Gmail, provided by Google) and
         use them only to reply to you. I keep them only as long as needed for our conversation.
       </p>
 
-      <h2>Cookies and browser storage</h2>
-      <p>These cookies are set <strong>only after you click Accept</strong>:</p>
-      <div class="legal-table-wrap">
-        <table class="legal-table">
-          <thead>
-            <tr><th scope="col">Cookie</th><th scope="col">Set by</th><th scope="col">Purpose</th></tr>
-          </thead>
-          <tbody>
-            {cookies.map((c) => (
-              <tr><td class="mono">{c.name}</td><td>{c.who}</td><td>{c.purpose}</td></tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <p>
-        Microsoft decides how long its cookies last; see Clarity's cookie list for details.
-      </p>
-      <p>
-        The site also saves one small item in your browser's local storage, <span class="mono">bdb-analytics-consent</span>,
-        which simply remembers whether you accepted or declined analytics, so the banner doesn't appear on every page. It is
-        kept for 6 months, after which you are asked again. Because it only stores your choice, it doesn't require consent.
-      </p>
-      <p>
-        Everything else the site needs, including fonts, photos and the live ISS orbit data, is served from this site
-        itself, so your browser doesn't contact other companies unless you accept analytics or follow an external link
-        (YouTube, LinkedIn).
-      </p>
-
-      <h2>Your choices</h2>
-      <p>
-        You can change your analytics choice at any time:
-        <button class="text-btn" type="button" data-consent-open>open cookie settings</button>. Choosing Decline after
-        accepting stops Clarity, which also deletes its cookie for this site. You can also block or delete cookies in your
-        browser settings.
-      </p>
-
       <h2>Your rights</h2>
       <p>
-        Under the GDPR you have the right to access, correct or delete your personal data, to restrict or object to its
-        processing, to data portability, and to withdraw consent at any time. To use these rights, email
-        <a href={`mailto:${email}`}>{email}</a>. Clarity data is pseudonymous (it isn't linked to your name), so I may need
-        details such as the date and time of your visit to find it.
-      </p>
-      <p>
-        If you think your data has been handled improperly, you can complain to the Spanish data protection authority,
-        the <a href="https://www.aepd.es" target="_blank" rel="noopener">Agencia Española de Protección de Datos (AEPD)</a>,
+        Under the GDPR you have the right to access, correct or delete your personal data, and to object to its
+        processing. To use these rights, email <a href={`mailto:${email}`}>{email}</a>. If you think your data has been
+        handled improperly, you can complain to the Spanish data protection authority, the
+        <a href="https://www.aepd.es" target="_blank" rel="noopener">Agencia Española de Protección de Datos (AEPD)</a>,
         or to the authority in your own country.
       </p>
 
       <h2>Changes</h2>
-      <p>If this site starts collecting anything new, this page will be updated and the date at the top will change.</p>
+      <p>If this site ever starts collecting anything, this page will be updated first and the date at the top will change.</p>
     </div>
   </main>
 </Base>
