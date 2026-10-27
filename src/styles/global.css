@@ -1720,6 +1720,28 @@ body:has(.app.is-gallery) .site-header::before {
   .more {
     display: none;
   }
+  .footer-privacy {
+    display: none;
+  }
+  .site-nav .site-nav-legal {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+    margin-top: 14px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    list-style: none;
+  }
+  .site-nav-legal a,
+  .site-nav-legal .text-btn {
+    padding: 6px 0;
+    color: var(--ink-3);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: none;
+    text-decoration: none;
+  }
   .totals {
     gap: 10px;
     font-size: 10px;
@@ -1843,6 +1865,132 @@ body:has(.app.is-gallery) .site-header::before {
   }
 }
 
+/* ---------- Privacy links and legal page ---------- */
+.site-footer,
+.g-legal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 22px;
+  color: var(--ink-3);
+  font-size: 12px;
+}
+.site-footer {
+  padding: 22px var(--gutter) 28px;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+}
+.g-legal {
+  margin: 28px 0 0;
+}
+.site-footer a,
+.g-legal a,
+.footer-privacy {
+  color: var(--ink-2);
+  transition: color 0.3s;
+}
+.site-footer a:hover,
+.g-legal a:hover,
+.footer-privacy:hover {
+  color: var(--ink);
+}
+.site-footer .text-btn,
+.g-legal .text-btn {
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.site-footer .text-btn:hover,
+.g-legal .text-btn:hover {
+  color: var(--ink);
+}
+/* Homepage: a quiet link before "More to explore" */
+.footer-privacy {
+  margin-left: auto;
+  margin-right: 34px;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+/* Shown only inside the mobile menu */
+@media (min-width: 900px) {
+  .site-nav .site-nav-legal {
+    display: none;
+  }
+}
+
+.legal-updated {
+  margin: 18px 0 0;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+.legal-prose {
+  max-width: 72ch;
+  font-size: 15.5px;
+  line-height: 1.7;
+}
+.legal-prose h2 {
+  margin: 48px 0 14px;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 700;
+  font-size: clamp(18px, 1.6vw, 22px);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.legal-prose h3 {
+  margin: 30px 0 8px;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 600;
+}
+.legal-prose p,
+.legal-prose ul {
+  margin: 0 0 14px;
+}
+.legal-prose ul {
+  padding-left: 20px;
+}
+.legal-prose li {
+  margin-bottom: 6px;
+}
+.legal-prose a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--accent-soft);
+}
+.legal-prose a:hover {
+  text-decoration-color: var(--accent);
+}
+.legal-table-wrap {
+  margin: 0 0 16px;
+  overflow-x: auto;
+}
+.legal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.legal-table th,
+.legal-table td {
+  padding: 10px 14px 10px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.legal-table th {
+  color: var(--ink-3);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.legal-table td.mono {
+  color: var(--ink);
+  white-space: nowrap;
+}
+
 /* ---------- Analytics consent banner ---------- */
 .consent {
   position: fixed;
@@ -1916,14 +2064,7 @@ body:has(.app.is-gallery) .site-header::before {
 }
 .consent-btn:hover {
   border-color: var(--accent);
-}
-.consent-btn--accept {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #04110c;
-}
-.consent-btn--accept:hover {
-  background: #6af5c6;
+  background: rgba(62, 240, 177, 0.08);
 }
 .consent-btn:focus-visible {
   outline: 2px solid var(--accent);

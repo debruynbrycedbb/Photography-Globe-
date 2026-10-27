@@ -18,6 +18,7 @@ const og = await sized(loc.data.banner ?? loc.data.cover, 1200);
   active="explore"
   bodyClass="page-globe"
   ogImage={og}
+  footer={false}
 >
   <GlobeApp current={loc} />
 </Base>

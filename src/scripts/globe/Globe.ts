@@ -143,7 +143,7 @@ export class Globe {
   private craterQuad!: Mesh;
   private sunDir = new Vector3(1, 0, 0);
   private sunUpdated = -1;
-  private iss = new IssTracker();
+  private iss!: IssTracker;
   private issState: IssState | null = null;
   private issDot!: Points;
   private issTrack!: Line;
@@ -365,6 +365,7 @@ export class Globe {
     this.issDot.frustumCulled = false;
     this.issDot.renderOrder = 3;
     this.scene.add(this.issDot);
+    this.iss = new IssTracker(`${this.opts.base}iss-tle.txt`);
     this.iss.load().then((ok) => {
       if (!ok) console.info('ISS orbit data unavailable; tracker hidden.');
     });

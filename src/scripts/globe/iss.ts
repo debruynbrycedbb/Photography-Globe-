@@ -3,10 +3,10 @@ import { twoline2satrec, propagate, gstime, eciToGeodetic, degreesLat, degreesLo
 /**
  * Live position of the International Space Station.
  *
- * The ISS's published orbit (a "TLE") is fetched once from CelesTrak, with
- * wheretheiss.at as a backup, and cached in the browser for 12 hours. The exact
- * position is then calculated on the visitor's device for any moment (standard
- * SGP4 orbit model), so it moves smoothly without polling a server.
+ * The ISS's published orbit (a "TLE") is downloaded by the site's build on GitHub
+ * (refreshed daily) and served from this site as iss-tle.txt, so visitors' browsers
+ * never contact a third-party server. The exact position is then calculated on the
+ * visitor's device for any moment (standard SGP4 orbit model).
  */
 export interface IssState {
   lat: number;
@@ -16,51 +16,26 @@ export interface IssState {
 }
 
 type SatRec = ReturnType<typeof twoline2satrec>;
-const CACHE_KEY = 'iss-tle-v1';
-const MAX_AGE = 12 * 3600 * 1000;
-
-async function fetchTle(): Promise<[string, string]> {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    if (raw) {
-      const c = JSON.parse(raw);
-      if (Date.now() - c.at < MAX_AGE && c.l1 && c.l2) return [c.l1, c.l2];
-    }
-  } catch {}
-  const sources: (() => Promise<[string, string]>)[] = [
-    async () => {
-      const t = await (await fetch('https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=TLE')).text();
-      const lines = t.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
-      const l1 = lines.find((l) => l.startsWith('1 25544'));
-      const l2 = lines.find((l) => l.startsWith('2 25544'));
-      if (!l1 || !l2) throw new Error('CelesTrak: no TLE');
-      return [l1, l2];
-    },
-    async () => {
-      const j = await (await fetch('https://api.wheretheiss.at/v1/satellites/25544/tles')).json();
-      if (!j.line1 || !j.line2) throw new Error('wheretheiss.at: no TLE');
-      return [j.line1, j.line2];
-    },
-  ];
-  for (const s of sources) {
-    try {
-      const tle = await s();
-      try {
-        localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), l1: tle[0], l2: tle[1] }));
-      } catch {}
-      return tle;
-    } catch {}
-  }
-  throw new Error('ISS orbit data unavailable');
-}
+/** Orbit data older than this is too inaccurate to show (e.g. if the daily refresh stopped). */
+const MAX_AGE_DAYS = 10;
 
 export class IssTracker {
   private rec: SatRec | null = null;
 
+  constructor(private url: string) {}
+
   async load(): Promise<boolean> {
     try {
-      const [l1, l2] = await fetchTle();
-      this.rec = twoline2satrec(l1, l2);
+      const text = await (await fetch(this.url)).text();
+      const lines = text.split(/\r?\n/).map((s) => s.trim());
+      const l1 = lines.find((l) => l.startsWith('1 25544'));
+      const l2 = lines.find((l) => l.startsWith('2 25544'));
+      if (!l1 || !l2) return false;
+      const rec = twoline2satrec(l1, l2);
+      const year = rec.epochyr < 57 ? 2000 + rec.epochyr : 1900 + rec.epochyr;
+      const epoch = Date.UTC(year, 0, 1) + (rec.epochdays - 1) * 86400000;
+      if (Math.abs(Date.now() - epoch) > MAX_AGE_DAYS * 86400000) return false;
+      this.rec = rec;
       return !!this.at(new Date());
     } catch {
       return false;

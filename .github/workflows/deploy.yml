@@ -6,6 +6,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Rebuild once a day so the ISS orbit data stays fresh.
+  schedule:
+    - cron: '23 4 * * *'
 
 permissions:
   contents: read
@@ -52,6 +55,21 @@ jobs:
             echo "SITE_URL=${{ steps.pages.outputs.origin }}" >> "$GITHUB_ENV"
             echo "BASE_PATH=${{ steps.pages.outputs.base_path }}/" >> "$GITHUB_ENV"
           fi
+
+      # The ISS orbit data is downloaded here and served from the site itself, so
+      # visitors' browsers never contact a third-party server. If both sources fail,
+      # the site still builds and the ISS is simply not shown.
+      - name: Download ISS orbit data
+        run: |
+          if curl -fsS --retry 3 --max-time 20 'https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=TLE' -o public/iss-tle.txt && grep -q '^1 25544' public/iss-tle.txt; then
+            echo "ISS data from CelesTrak"
+          elif curl -fsS --retry 3 --max-time 20 'https://api.wheretheiss.at/v1/satellites/25544/tles' | jq -r '.line1, .line2' > public/iss-tle.txt && grep -q '^1 25544' public/iss-tle.txt; then
+            echo "ISS data from wheretheiss.at"
+          else
+            echo "::warning::Could not download ISS orbit data; the ISS will be hidden until the next build."
+            rm -f public/iss-tle.txt
+          fi
+          cat public/iss-tle.txt 2>/dev/null || true
 
       - name: Build
         run: |

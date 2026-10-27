@@ -9,3 +9,6 @@ dist/
 # Original, full-size photos stay on your computer only.
 # The site uses the resized, metadata-free copies in src/content/locations.
 Photos for Globe/
+
+# Downloaded during the build on GitHub (see .github/workflows/deploy.yml).
+public/iss-tle.txt

@@ -14,8 +14,10 @@ interface Props {
   active?: 'explore' | 'gallery' | 'about' | 'contact';
   bodyClass?: string;
   ogImage?: string;
+  /** Small footer with privacy links (the globe pages have their own). */
+  footer?: boolean;
 }
-const { title, description = site.description, active, bodyClass = '', ogImage } = Astro.props;
+const { title, description = site.description, active, bodyClass = '', ogImage, footer = true } = Astro.props;
 const fullTitle = title ? `${title} | ${site.title}` : site.title;
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 ---
@@ -40,6 +42,15 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
     <a class="skip-link" href="#main">Skip to content</a>
     <Header active={active} />
     <slot />
+    {
+      footer && (
+        <footer class="site-footer">
+          <span>© {new Date().getFullYear()} Bryce de Bruyn</span>
+          <a href={withBase('privacy/')}>Privacy &amp; cookies</a>
+          <button class="text-btn" type="button" data-consent-open>Cookie settings</button>
+        </footer>
+      )
+    }
     <Consent />
     <script>
       // Mobile menu
