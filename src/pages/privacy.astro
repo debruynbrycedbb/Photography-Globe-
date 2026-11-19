@@ -3,26 +3,124 @@ import Base from '../layouts/Base.astro';
 import { site } from '../site.config';
 
 const email = site.contact.email;
-const updated = '27 October 2026';
+const updated = '19 November 2026';
+const storage = [
+  {
+    name: 'bdb-globe-cookies',
+    type: 'Essential, local storage in your browser',
+    purpose: "Remembers your cookie choice so the banner doesn't ask again on every page. Never sent anywhere.",
+    kept: '6 months, then you are asked again',
+  },
+  {
+    name: '_ga',
+    type: 'Analytics cookie (Google), only after Accept',
+    purpose: 'Tells visits from different browsers apart with a random ID.',
+    kept: '2 years',
+  },
+  {
+    name: '_ga_<ID>',
+    type: 'Analytics cookie (Google), only after Accept',
+    purpose: 'Keeps track of your current visit (session).',
+    kept: '2 years',
+  },
+];
 ---
 
-<Base title="Privacy" description="This site doesn't collect personal data, use cookies or track visitors." bodyClass="is-gallery-page">
+<Base title="Privacy & cookies" description="How this site uses cookies and Google Analytics, and your rights under the GDPR." bodyClass="is-gallery-page">
   <main id="main" class="page legal">
     <header class="page-head">
       <p class="tag">Privacy</p>
-      <h1 class="page-title">Privacy</h1>
+      <h1 class="page-title">Privacy &amp; cookies</h1>
       <p class="legal-updated">Last updated {updated}</p>
     </header>
 
     <div class="prose legal-prose">
       <p>
-        This is a personal photography portfolio. It doesn't collect personal data, use cookies, or include analytics,
-        tracking or advertising. There are no accounts or forms.
+        This is a personal photography portfolio. It has no accounts, forms, shop or advertising. The only data it
+        collects is visitor statistics through Google Analytics, and analytics cookies are only used if you accept them.
       </p>
 
       <h2>Who is responsible</h2>
       <p>
-        Bryce de Bruyn runs this website. Contact: <a href={`mailto:${email}`}>{email}</a>.
+        I, Bryce de Bruyn (Barcelona, Spain), am responsible for this website and for the personal data described here
+        (the data controller). Contact: <a href={`mailto:${email}`}>{email}</a>.
+      </p>
+
+      <h2>The short version</h2>
+      <ul>
+        <li>I use Google Analytics 4 to count visits and see which places and photos people look at. Nothing is used for advertising or to build a profile of you.</li>
+        <li>Until you choose, and if you press <strong>Only essential</strong>, Google Analytics runs <strong>without cookies</strong>: it only receives anonymous visit counts that cannot recognise you or link your visits together.</li>
+        <li>If you press <strong>Accept</strong>, Google Analytics may also set its cookies, so repeat visits can be counted.</li>
+        <li>You can change your choice at any time with “Cookie settings” (in the menu, at the bottom of each gallery and below).</li>
+      </ul>
+
+      <h2>Google Analytics</h2>
+      <p>Every visit loads Google Analytics 4 through the Google tag, using Google Consent Mode.</p>
+      <p>
+        <strong>Without consent (before you choose, or “Only essential”):</strong> no cookies are set or read. Google
+        receives anonymous signals (“cookieless pings”) that a page was viewed or something was clicked, with the page,
+        time, approximate country and city, and your device and browser type, but no ID that recognises you or connects
+        one visit to another. Google uses them only to estimate visitor totals.
+      </p>
+      <p>
+        <strong>With consent (“Accept”):</strong> Google Analytics also sets the cookies listed below. It then collects
+        usage data such as the locations and galleries you open, how far you scroll, how long you stay, the website that
+        sent you here, your approximate location (country and city, derived from your IP address), and your device,
+        browser, operating system and screen size. Its cookies give your browser a random ID so repeat visits can be
+        counted.
+      </p>
+      <p>
+        Google Analytics 4 does not log or store IP addresses. Nothing is used for advertising: this site always tells
+        Google that ad storage, ad user data and ad personalisation are refused.
+      </p>
+      <ul>
+        <li>
+          <strong>Legal basis:</strong> for analytics cookies, your consent (GDPR art. 6(1)(a) and art. 22.2 of the
+          Spanish LSSI). You can withdraw it at any time, as easily as you gave it; this does not affect anything processed
+          before. For the anonymous counts without cookies, my legitimate interest in knowing how many people visit my
+          work (GDPR art. 6(1)(f)). You can object to it by emailing me, or block it with a browser content blocker.
+        </li>
+        <li>
+          <strong>Who processes it:</strong> Google Ireland Limited (Gordon House, Barrow Street, Dublin 4, Ireland), as
+          my processor. Data may be transferred to Google LLC in the United States, which is certified under the EU–US
+          Data Privacy Framework; Google's standard contractual clauses also apply.
+        </li>
+        <li><strong>How long:</strong> Google Analytics keeps visit-level data for 14 months; after that only totals remain.</li>
+        <li>
+          More: <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">how Google uses data from sites that use its services</a>
+          and <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's privacy policy</a>.
+        </li>
+      </ul>
+
+      <h2>Cookies and browser storage</h2>
+      <div class="legal-table-wrap">
+        <table class="legal-table">
+          <thead>
+            <tr><th scope="col">Name</th><th scope="col">Type</th><th scope="col">Purpose</th><th scope="col">Kept for</th></tr>
+          </thead>
+          <tbody>
+            {
+              storage.map((c) => (
+                <tr>
+                  <td class="mono" data-label="Name">{c.name}</td>
+                  <td data-label="Type">{c.type}</td>
+                  <td data-label="Purpose">{c.purpose}</td>
+                  <td data-label="Kept for">{c.kept}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+      <p>
+        When you choose “Only essential” after having accepted, the site deletes the <span class="mono">_ga</span>
+        cookies it can reach. You can also block or delete cookies in your browser settings at any time.
+      </p>
+
+      <h2>Your choices</h2>
+      <p>
+        You can change your analytics choice at any time:
+        <button class="text-btn" type="button" data-consent-open>open cookie settings</button>.
       </p>
 
       <h2>Hosting</h2>
@@ -34,11 +132,11 @@ const updated = '27 October 2026';
         <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub's privacy statement</a>.
       </p>
 
-      <h2>No cookies or third parties</h2>
+      <h2>No other third parties</h2>
       <p>
-        The site sets no cookies. Everything it needs, including fonts, photos and the live ISS orbit data, is served
-        from this site itself, so your browser doesn't contact other companies unless you follow an external link (for
-        example to YouTube or LinkedIn), where that site's own privacy policy applies.
+        Apart from Google Analytics, everything the site needs, including fonts, photos and the live ISS orbit data, is
+        served from this site itself, so your browser doesn't contact other companies unless you follow an external link
+        (for example to YouTube or LinkedIn), where that site's own privacy policy applies.
       </p>
 
       <h2>Emails you send me</h2>
@@ -49,15 +147,19 @@ const updated = '27 October 2026';
 
       <h2>Your rights</h2>
       <p>
-        Under the GDPR you have the right to access, correct or delete your personal data, and to object to its
-        processing. To use these rights, email <a href={`mailto:${email}`}>{email}</a>. If you think your data has been
-        handled improperly, you can complain to the Spanish data protection authority, the
-        <a href="https://www.aepd.es" target="_blank" rel="noopener">Agencia Española de Protección de Datos (AEPD)</a>,
+        Under the GDPR you have the right to access, correct or delete your personal data, to restrict or object to its
+        processing, to data portability, and to withdraw consent at any time. To use these rights, email
+        <a href={`mailto:${email}`}>{email}</a>. Because Google Analytics only uses a random ID, I usually cannot link
+        the data to you personally, so I may need details such as the date and time of your visit to find it.
+      </p>
+      <p>
+        If you think your data has been handled improperly, you can complain to the Spanish data protection authority,
+        the <a href="https://www.aepd.es" target="_blank" rel="noopener">Agencia Española de Protección de Datos (AEPD)</a>,
         or to the authority in your own country.
       </p>
 
       <h2>Changes</h2>
-      <p>If this site ever starts collecting anything, this page will be updated first and the date at the top will change.</p>
+      <p>If this site starts collecting anything new, this page will be updated first and the date at the top will change.</p>
     </div>
   </main>
 </Base>

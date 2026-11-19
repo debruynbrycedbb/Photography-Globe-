@@ -1,0 +1,92 @@
+---
+/**
+ * Cookie banner for Google Analytics 4 (Google tag GTM-NPWM37NJ, set up in Base.astro's <head>).
+ * Same system as my Interactive CV and public hub: the tag always loads with cookies off, so
+ * Google only gets anonymous, cookieless visit pings. "Accept" turns analytics cookies on;
+ * "Only essential" keeps them off (and deletes any _ga cookies). Ad storage is always off.
+ * The choice is remembered in this browser for 6 months ('bdb-globe-cookies'); any element with
+ * data-consent-open (menu, footers, Privacy page) shows the banner again.
+ * Both buttons look identical, as the Spanish data protection agency (AEPD) requires.
+ */
+import { withBase } from '../lib/locations';
+---
+
+<div class="consent" role="region" aria-label="Cookies" data-consent hidden>
+  <div class="consent-text">
+    <p class="consent-title">Cookies</p>
+    <p>
+      I use Google Analytics to see how many people visit and which places they explore. Without your OK it only
+      counts visits anonymously, without cookies. Accept to allow its cookies, or keep only the essential ones. Nothing
+      is used for advertising.{' '}
+      <a href={withBase('privacy/')}>Privacy &amp; cookies</a>
+    </p>
+  </div>
+  <div class="consent-actions">
+    <button class="consent-btn" type="button" data-consent-choice="denied">Only essential</button>
+    <button class="consent-btn" type="button" data-consent-choice="granted">Accept</button>
+  </div>
+</div>
+
+<script>
+  const KEY = 'bdb-globe-cookies';
+  const MAX_AGE = 182 * 24 * 3600 * 1000; // ask again after about 6 months
+  const banner = document.querySelector<HTMLElement>('[data-consent]');
+  const w = window as any;
+
+  function read(): 'granted' | 'denied' | null {
+    try {
+      const c = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (c && (c.v === 'granted' || c.v === 'denied') && Date.now() - c.t < MAX_AGE) return c.v;
+    } catch {}
+    return null;
+  }
+  function save(v: 'granted' | 'denied') {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ v, t: Date.now() }));
+    } catch {}
+  }
+
+  // Remove Google Analytics cookies (_ga, _ga_XXXX) when consent is withdrawn.
+  function clearGaCookies() {
+    const h = location.hostname;
+    document.cookie.split(';').forEach((c) => {
+      const name = c.split('=')[0].trim();
+      if (name.indexOf('_ga') !== 0) return;
+      ['', h, '.' + h].forEach((d) => {
+        document.cookie = name + '=; Max-Age=0; path=/' + (d ? '; domain=' + d : '');
+      });
+    });
+  }
+
+  function show() {
+    if (!banner) return;
+    banner.hidden = false;
+    requestAnimationFrame(() => requestAnimationFrame(() => banner.classList.add('is-visible')));
+  }
+  function hide() {
+    if (!banner) return;
+    banner.classList.remove('is-visible');
+    setTimeout(() => {
+      if (!banner.classList.contains('is-visible')) banner.hidden = true;
+    }, 400);
+  }
+
+  banner?.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-consent-choice]');
+    if (!b) return;
+    const v = b.dataset.consentChoice as 'granted' | 'denied';
+    save(v);
+    hide();
+    if (typeof w.gtag === 'function') w.gtag('consent', 'update', { analytics_storage: v });
+    if (v === 'denied') clearGaCookies();
+  });
+  document.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('[data-consent-open]')) {
+      e.preventDefault();
+      show();
+      banner?.querySelector<HTMLButtonElement>('.consent-btn')?.focus({ preventScroll: true });
+    }
+  });
+
+  if (!read()) setTimeout(show, 1200); // let the page settle first
+</script>
